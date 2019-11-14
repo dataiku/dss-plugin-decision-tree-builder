@@ -103,7 +103,7 @@ class Tree(object):
             return stats
 
         stats["bins"] = []
-        empty_values = set(self.df[col].dropna())
+        empty_values = set(self.df[col].dropna().unique())
         if not column.empty:
             target_grouped = target_column.groupby(column.fillna("No values").apply(safe_str))
             target_distrib = target_grouped.value_counts(dropna=False)
