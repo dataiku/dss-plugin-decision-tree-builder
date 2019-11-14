@@ -1,0 +1,191 @@
+<div class="template" ng-controller="EditController">
+    <div ng-if="error.msg"
+         focus-here
+         class="fatal-error-background"
+         tabindex=0
+         ng-keyup="$event.keyCode == 27 && removeErrModal()"
+         ng-click="removeErrModal($event)">
+        <div class="fatal-error">
+            <div class="title fatal-error-title">
+                <div>Backend failed</div>
+                <i class="icon icon-grey icon-remove" ng-click="removeErrModal()"></i>
+            </div>
+            <div class="fatal-error-msg">
+                {{error.msg}}
+            </div>
+        </div>
+    </div>
+    <div class="tree-visualization" ng-class="{'full-screen': template === 'viz' || template === 'sun'}">
+        <div class="toolbar-header">
+            <div class="icons-div" ng-class="{'icons-div-tree': template === 'viz' || template === 'edit', 'icons-div-sun': template === 'sun'}">
+                <div class="icons-toggle">
+                    <i class="icon icon-pencil"
+                       ng-class="{'toolbar-selected': template === 'edit'}"
+                       title="Edit"
+                       ng-click="setTemplate('edit')">
+                    </i>
+                    <i class="icon icon-eye-open"
+                       ng-class="{'toolbar-selected': template === 'viz'}"
+                       title="Tree visualization"
+                       ng-click="setTemplate('viz')">
+                    </i>
+                    <img class="icon sunburst"
+                         ng-class="{'toolbar-selected': template === 'sun'}"
+                         src="/plugins/decision-tree-builder/resource/img/sunburst.png"
+                         title="Sunburst visualization"
+                         ng-click="setTemplate('sun')"
+                         height="20px">
+                    </img>
+                </div>
+                <img class="icon"
+                     ng-if="template === 'viz' || template === 'edit'"
+                     src="/plugins/decision-tree-builder/resource/img/fit.png"
+                     title="Zoom fit" ng-click="zoomFit()"
+                     height="20px">
+                </img>
+                <img class="icon"
+                     ng-if="template === 'viz' || template === 'edit'"
+                     src="/plugins/decision-tree-builder/resource/img/100.png"
+                     title="Zoom 100%"
+                     ng-click="zoomBack()"
+                     height="20px">
+                </img>
+                <i class="icon icon-save" ng-click="save()" ng-class="{'icon-grey': isSaved, 'icon-blue': !isSaved}" title="Save as..."></i>
+                <i class="icon icon-grey icon-remove" title="Close tree" ng-click="close()"></i>
+            </div>
+        </div>
+        <div class="tree" ng-show="template == 'edit' || template == 'viz'">
+            <spinner ng-if="loadingTree"></spinner>
+        </div>
+        <div id="sunburst" ng-show="template == 'sun'">
+            <div id="leftsidebar"></div>
+            <div id="chart"></div>
+        </div>
+    </div>
+    <div class="edit-panel" ng-if="template === 'edit'">
+        <div class="selected-node-panel" ng-if="loadingTree">
+            <spinner></spinner>
+        </div>
+        <div class="selected-node-panel" ng-if="!loadingTree">
+            <div class="node-info">
+                <div class="header">
+                    <div class="header-div">Selected node</div>
+                </div>
+                <div class="node-info-sections">
+                    <div class="section section-edit section-tall">
+                        <div class="section-title">
+                            Probabilities
+                        </div>
+                        <div class="info-section info-section-edit">
+                            <div class="info" ng-repeat="proba in selectedNode.probabilities">
+                                <div class="proba-square" ng-style="{'background-color': colors[proba[0]]}"></div>
+                                <span class="ellipsed-text max-small-text" title="{{proba[0]}}">{{proba[0]}}:</span>
+                                <span class="max-very-small-text">&nbsp;{{proba[1].toFixed(3)}}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section section-edit section-inline">
+                        <div class="section-title">
+                            Samples
+                        </div>
+                        <div class="info samples">
+                            <div class="small-text ellipsed-text info-samples-absolute">{{selectedNode.samples[0]}}</div>
+                            <em class="info-samples-relative">&nbsp;({{toFixedIfNeeded(selectedNode.samples[1], 2, true)}}%)</em>
+                        </div>
+                    </div>
+                    <div class="section section-edit section-tall" ng-if="selectedNode.feature">
+                        <div class="section-title">
+                            Decision rule
+                        </div>
+                        <div class="info-section info-section-edit">
+                            <div ng-repeat="rule in decisionRule" >
+                                <div class="info" title="{{rule.full}}"><span ng-if="decisionRule.length > 1 && $index">↳</span>&nbsp;{{rule.ellipsed}} </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section section-edit section-inline section-label" ng-if="selectedNode.isLeaf">
+                        <div class="section-title">
+                            Label
+                            <i class="icon-question-sign" title="When scoring or evaluating your dataset, labels are added as additional information to your samples"></i>
+                        </div>
+                        <div class="label-div" ng-show="!selectedNode.editLabel">
+                            <div class="label" ng-click="enableLabelEdit()">
+                                <div class="ellipsed-text long-text" ng-attr-title="{{selectedNode.label}}">{{selectedNode.label || "No label"}}</div>
+                                <i class="icon icon-pencil"></i>
+                            </div>
+                            <i class="icon icon-trash label"
+                               ng-if="selectedNode.label"
+                               ng-click="selectedNode.label = undefined; editLabel()"></i>
+                        </div>
+                        <form ng-submit="editLabel()" name="labelForm" ng-if="selectedNode.editLabel">
+                            <input focus-here
+                                   type="ellipsed-text long-text"
+                                   name="label-edit"
+                                   ng-model="selectedNode.label"
+                                   ng-keyup="$event.keyCode == 27 && resetLabel()">
+                            <i class="icon icon-grey icon-ok" ng-click="editLabel()"></i>
+                            <i class="icon icon-grey icon-remove" ng-click="resetLabel()"></i>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="node-splits" ng-if="!splits[selectedNode.id]">
+                <div class="header header-search" ng-class="{'header-border': (search.list != 'feature')}">
+                    <div class="header-div" ng-if="search.list != 'feature'">Split on...</div>
+                    <input focus-here
+                           placeholder="Feature"
+                           ng-if="search.list == 'feature'"
+                           class="search-bar"
+                           ng-model="search.string"
+                           ng-keyup="$event.keyCode == 27 && (search.list = undefined)">
+                    <div class="header-div">
+                        <i class="icon icon-grey"
+                           ng-class="search.list == 'feature' ? 'icon-remove' : 'icon-search'"
+                           ng-click="iconClick('feature')"></i>
+                    </div>
+                </div>
+                <div class="list list-features">
+                    <div class="row row-feature"
+                         ng-repeat="(name, info) in features"
+                         ng-show="search.list != 'feature' || name.toLowerCase().includes(search.string.toLowerCase())"
+                         ng-click="!loadingHistogram && chooseFeature(name)"
+                         ng-style="{'border': selectedNode.featureChildren == name ? '1px #3b99fc solid' : 'none'}">
+                        <i class="icon-font" ng-show="!treatedAsNum(name)"></i>
+                        <div class="numerical" ng-show="treatedAsNum(name)">#</div>
+                        <div class="ellipsed-text long-text" title="{{name}}">&nbsp;{{name}}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="node-splits" ng-if="splits[selectedNode.id]">
+                <div class="header header-border">
+                    <div class="header-div">Splits</div>
+                </div>
+                <div class="row row-feature-split">
+                    <i class="icon-font" ng-show="!treatedAsNum(selectedNode.featureChildren)"></i>
+                    <div class="numerical" ng-show="treatedAsNum(selectedNode.featureChildren)">#</div>
+                    <div class="ellipsed-text long-text" title="{{selectedNode.featureChildren}}">&nbsp;{{selectedNode.featureChildren}}</div>
+                    <div class="icons icons-solo">
+                        <i class="icon icon-trash" ng-if="splits[selectedNode.id].length > 1" ng-click="confirmDeleteAll()"></i>
+                    </div>
+                </div>
+                <div class="list list-splits">
+                    <div class="row row-split" ng-repeat="split in splits[selectedNode.id]">
+                        <div class="ellipsed-text long-text" title="{{treeData[split.left].values || treeData[split.left].end}}">{{treeData[split.left].values.join(", ") || treeData[split.left].end}}</div>
+                        <div class="icons icons-duo">
+                            <i class="icon icon-pencil" ng-click="selectSplit(split, treatedAsNum(selectedNode.featureChildren))"></i>
+                            <i class="icon icon-trash" ng-click="confirmDelete(split, splits[selectedNode.id], selectedNode.featureChildren)"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="action" ng-click="createSplit(treatedAsNum(selectedNode.featureChildren))">
+                    <i class="icon-plus"></i>
+                    Add a split
+                </div>
+            </div>
+        </div>
+        <div class="selected-split-panel" ng-if="loadingHistogram">
+            <spinner></spinner>
+        </div>
+        <div class="selected-split-panel" ng-if="!loadingHistogram && selectedNode.featureChildren && histData[selectedNode.featureChildren]" ng-include="'/plugins/decision-tree-builder/resource/templates/split-edit.html'"></div>
+    </div>
+</div>

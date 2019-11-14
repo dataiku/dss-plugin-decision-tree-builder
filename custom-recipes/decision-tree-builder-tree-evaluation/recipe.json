@@ -1,0 +1,138 @@
+{
+    "meta" : {
+        "label" : "Evaluate",
+        "description" : "Evaluate a dataset with a tree model designed in the webapp",
+        "icon" : "icon-star",
+        "iconColor" : "sky"
+    },
+
+    "kind" : "PYTHON",
+
+    "selectableFromDataset": "input_dataset",
+
+    "inputRoles" : [
+        {
+            "name": "input_dataset",
+            "label": "Input dataset",
+            "arity": "UNARY",
+            "required": true,
+            "acceptsDataset": true
+        },
+        {
+            "name": "folder",
+            "label": "Folder",
+            "description": "Folder containing the decision tree",
+            "arity": "UNARY",
+            "required": true,
+            "acceptsDataset": false,
+            "acceptsManagedFolder": true
+        }
+
+    ],
+
+    "outputRoles" : [
+        {
+            "name": "scored_dataset",
+            "label": "Scored dataset",
+            "arity": "UNARY",
+            "required": true,
+            "acceptsDataset": true
+        },
+        {
+            "name": "metrics_dataset",
+            "label": "Metrics dataset",
+            "arity": "UNARY",
+            "required": true,
+            "acceptsDataset": true
+        }
+
+    ],
+
+    "params": [
+        {
+            "name": "tree_file",
+            "label" : "Decision tree",
+            "type": "STRING",
+            "description": "Name of the JSON file, including the extension",
+            "mandatory" : true
+        },
+        {
+            "name" : "chunk_size",
+            "label" : "Chunk size",
+            "type": "INT",
+            "description":"Size of each chunk when scoring the dataset",
+            "mandatory" : false,
+            "defaultValue": 10000
+        },
+        {
+            "name": "probabilities",
+            "label" : "Output probabilities",
+            "type": "BOOLEAN",
+            "defaultValue" : true,
+            "description" : "output probabilities for each class in addition to the prediction "
+        },
+        {
+            "name": "filterMetrics",
+            "label" : "Filter metrics",
+            "type": "BOOLEAN",
+            "description" : "select a subset of available metrics to evaluate"
+        },
+        {
+            "label": "Available metrics",
+            "type": "SEPARATOR",
+            "visibilityCondition" : "model.filterMetrics"
+        },
+        {
+            "name": "auc",
+            "label" : "auc",
+            "type": "BOOLEAN",
+            "defaultValue" : true,
+            "visibilityCondition" : "model.filterMetrics"
+        },
+        {
+            "name": "recall",
+            "label" : "recall",
+            "type": "BOOLEAN",
+            "defaultValue" : true,
+            "visibilityCondition" : "model.filterMetrics"
+        },
+        {
+            "name": "precision",
+            "label" : "precision",
+            "type": "BOOLEAN",
+            "defaultValue" : true,
+            "visibilityCondition" : "model.filterMetrics"
+        },
+        {
+            "name": "accuracy",
+            "label" : "accuracy",
+            "type": "BOOLEAN",
+            "defaultValue" : true,
+            "visibilityCondition" : "model.filterMetrics"
+        },
+        {
+            "name": "logLoss",
+            "label" : "log loss",
+            "type": "BOOLEAN",
+            "defaultValue" : true,
+            "visibilityCondition" : "model.filterMetrics"
+        },
+        {
+            "name": "hammingLoss",
+            "label" : "hamming loss",
+            "type": "BOOLEAN",
+            "defaultValue" : true,
+            "visibilityCondition" : "model.filterMetrics"
+        },
+        {
+            "name": "calibrationLoss",
+            "label" : "calibration loss",
+            "type": "BOOLEAN",
+            "defaultValue" : true,
+            "visibilityCondition" : "model.filterMetrics"
+        }
+    ],
+
+    "resourceKeys" : []
+
+}

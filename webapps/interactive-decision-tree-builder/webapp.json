@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "label": "Decision tree builder",
+    "description": "Build manually a decision tree",
+    "icon": "icon-sitemap"
+  },
+
+  "baseType": "STANDARD",
+  "standardWebAppLibraries": ["d3", "dataiku", "font_awesome"],
+  "hasBackend": "true",
+
+  "params": [
+    {
+      "type": "SEPARATOR",
+      "label": "Folder (mandatory to save/load trees)"
+    },
+    {
+      "name": "input_folder",
+      "type": "FOLDER",
+      "label": "Folder",
+      "mandatory": true
+    }
+  ]
+}

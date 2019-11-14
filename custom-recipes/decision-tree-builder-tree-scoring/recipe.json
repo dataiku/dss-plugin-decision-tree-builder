@@ -1,0 +1,64 @@
+{
+    "meta" : {
+        "label" : "Score",
+        "description" : "Score a dataset with a tree model designed in the webapp",
+        "icon" : "icon-trophy",
+        "iconColor" : "sky"
+    },
+
+    "kind" : "PYTHON",
+
+    "selectableFromDataset": "input_dataset",
+
+    "inputRoles" : [
+        {
+            "name": "input_dataset",
+            "label": "Input Dataset",
+            "arity": "UNARY",
+            "required": true,
+            "acceptsDataset": true
+        },
+        {
+            "name": "folder",
+            "label": "Folder",
+            "description": "Folder containing the decision tree",
+            "arity": "UNARY",
+            "required": true,
+            "acceptsDataset": false,
+            "acceptsManagedFolder": true
+        }
+
+    ],
+
+    "outputRoles" : [
+        {
+            "name": "scored_dataset",
+            "label": "Scored dataset",
+            "arity": "UNARY",
+            "required": true,
+            "acceptsDataset": true
+        }
+
+    ],
+
+    "params": [
+        {
+            "name": "tree_file",
+            "label" : "Decision tree",
+            "type": "STRING",
+            "description": "Name of the JSON file, including the extension",
+            "mandatory" : true
+        },
+        {
+            "name" : "chunk_size",
+            "label" : "Chunk size",
+            "type": "INT",
+            "description":"Size of each chunk when scoring the dataset",
+            "mandatory" : false,
+            "defaultValue": 10000
+        }
+    ],
+
+    "resourceKeys" : []
+
+}
