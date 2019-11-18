@@ -133,7 +133,7 @@ The upper part is a **stacked histogram** of the target distribution across the 
 The lower part is the editor itself.
 To **create or edit a split**, one has to select one or more values in the list of the values taken by the feature. This list can be filtered by clicking on the magnifying glass on top and using the search bar that subsequently appears. A split **cannot** take a value that has already been selected by another split on the same node; the value must first be unselected from this other split.
 
-**Split editor for a numerical split**
+**Split editor on a numerical feature**
 
 ![](resource/img-doc/split-editor-num.png)
 
@@ -166,7 +166,7 @@ Every node of the tree has a tooltip displaying its main information (probabilit
 
 This visualization mode features the tree as a sunburst, with every arc corresponding to a node of the tree from the edit mode. When hovering upon an arc, the decision rule is displayed on the left. Clicking on an arc puts the selected arc in the center of the sunburst.
 
-Since the size of a node is proportional to the number of samples it has, some arcs may be too small to be displayed.
+Since the size of an arc is proportional to the number of samples it has, some arcs may be too small to be displayed.
 
 ## Score recipe
 
