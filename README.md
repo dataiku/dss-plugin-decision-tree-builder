@@ -40,9 +40,9 @@ From the landing page of the webapp, one can either create a new tree or load a 
 #### Sampling parameters
 
 - **Method:** The sampling method used on the dataset.
-    - _Head (default):_ takes the first N rows
+    - _Head (default):_ the first N rows
     - _Random:_ random sample of approximately N rows
-    - _Full:_ takes all the rows (this is **not** recommended for bigger datasets)
+    - _Full:_ all the rows (this is **not** recommended for bigger datasets)
 - **Sampling size:** The number N of rows for the sampling method (_Head_ or _Random_ methods)
 
 ### Building a decision tree
@@ -57,9 +57,9 @@ The toolbar is present in every mode of the webapp, always on the top of the scr
 
 It allows to perform the following general actions:
 - **Switch between modes** (edit, tree visualization, sunburst visualization).
-- **Zoom fit (edit and tree visualization modes only):** Adjusts the zoom scale to display the whole tree on the screen.
-- **Zoom 100% (edit and tree visualization modes only):** Centers on the selected node and unzooms.
-- **Save as...:** Saves to a JSON file stored at the root of the folder of the webapp. The icon is blue if there are unsaved changes, grey otherwise. Saving a tree with an already existing name will overwrite the previously saved tree.
+- **Zoom fit (edit and tree visualization modes only):** Adjust the zoom scale to display the whole tree on the screen.
+- **Zoom 100% (edit and tree visualization modes only):** Center on the selected node and unzoom.
+- **Save as...:** Save to a JSON file stored at the root of the folder of the webapp. The icon is blue if there are unsaved changes, grey otherwise. Saving a tree with an already existing name will overwrite the previously saved tree.
 - **Close tree:** Go back to the creation/load tree interface.
 
 **Modes of the webapp**
@@ -184,7 +184,7 @@ _Output_
 Use this recipe to score a dataset, using a decision tree made in the webapp as the prediction model.
 
 _Inputs_
-- Dataset with at least all the columns used by the decision tree. If the decision tree uses a numerical feature that has missing values in the input dataset, they are replaced with the mean of the feature in the dataset used to build the tree.
+- Dataset with at least all the columns used by the decision tree and the target column of the decision tree. If the decision tree uses a numerical feature that has missing values in the input dataset, they are replaced with the mean of the feature in the dataset used to build the tree.
 - Folder containing a decision tree from the Interactive Decision Tree Builder webapp.
 
 _Outputs_
@@ -204,7 +204,7 @@ _Outputs_
 - **Chunk size:** The number of rows in each evaluation batch.
 - **Output probabilities:** Whether to output the probabilities of each class in the evaluated dataset. Checked by default.
 
-- **Filter metrics:** Whether to compute a subset (or no) metrics. Is unchecked by default (ie. all the available metrics will be computed to build the metrics dataset).
+- **Filter metrics:** Whether to compute a subset (or no) metrics. Unchecked by default (ie. all the available metrics will be computed to build the metrics dataset).
 
 ![](resource/img-doc/evaluate-metrics.png)
 
