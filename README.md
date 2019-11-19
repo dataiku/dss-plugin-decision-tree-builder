@@ -41,7 +41,7 @@ From the landing page of the webapp, one can either create a new tree or load a 
 
 - **Method:** The sampling method used on the dataset.
     - _Head (default):_ takes the first N rows
-    - _Random:_ takes approximately N rows
+    - _Random:_ random sample of approximately N rows
     - _Full:_ takes all the rows (this is **not** recommended for bigger datasets)
 - **Sampling size:** The number N of rows for the sampling method (_Head_ or _Random_ methods)
 
@@ -59,8 +59,8 @@ It allows to perform the following general actions:
 - **Switch between modes** (edit, tree visualization, sunburst visualization).
 - **Zoom fit (edit and tree visualization modes only):** Adjusts the zoom scale to display the whole tree on the screen.
 - **Zoom 100% (edit and tree visualization modes only):** Centers on the selected node and unzooms.
-- **Save as...:** Saves to a JSON file stored at the root of the folder of the webapp. The icon is blue if there are unsaved changes, grey otherwise. Saving a tree with an already existing names will overwrite the previously saved tree.
-- **Close tree:** Brings back to the landing page.
+- **Save as...:** Saves to a JSON file stored at the root of the folder of the webapp. The icon is blue if there are unsaved changes, grey otherwise. Saving a tree with an already existing name will overwrite the previously saved tree.
+- **Close tree:** Go back to the creation/load tree interface.
 
 **Modes of the webapp**
 
@@ -84,9 +84,7 @@ After a node is selected, the **Selected node** section updates with various inf
 
 If the selected node is a leaf, the list of features is displayed below the **Selected node** section. This list can be filtered by clicking on the magnifying glass and using the search bar that subsequently appears.
 
-_Add a split_
-
-Clicking on one of the features opens the [split editor](#creating-splits).
+_Add a split_ Clicking on one of the features opens the [split editor](#creating-splits).
 
 **Available actions if the selected node has already splits**
 
@@ -94,21 +92,13 @@ If the selected node is not a leaf, the feature used for the splits on the node 
 
 ![](resource/img-doc/edit-not-leaf.png)
 
-_Add a split_
+_Add a split_ Clicking on **Add a split** below the split list opens the [split editor](#creating-splits). Auto creation of splits will be disabled.
 
-Clicking on **Add a split** below the split list opens the [split editor](#creating-splits). Auto creation of splits will be disabled.
+_Edit a split_ Clicking on the pencil of a split opens the [split editor](#creating-splits).
 
-_Edit a split_
+_Delete a split_ Clicking on the bin of a split deletes it.
 
-Clicking on the pencil of a split opens the [split editor](#creating-splits).
-
-_Delete a split_
-
-Clicking on the bin of a split deletes it.
-
-_Delete all splits on a node (Only if the node as two or more splits)_
-
-Clicking on the bin next to the name of the feature chosen for the splits will delete all the splits at once.
+_Delete all splits on a node__ Only available if the node as two or more splits. Clicking on the bin next to the name of the feature chosen for the splits will delete all the splits at once.
 
 #### Creating splits
 
@@ -118,7 +108,7 @@ To create N nodes, one has to create N-1 split.
 For instance:
 - **Categorical:** splitting on `Cat` for the feature `Animal` will create two nodes (`Animal` is `Cat` and `Animal` is not `Cat`); splitting on `Cat` and on `Dog` will create three nodes (`Animal` is `Cat`, `Animal` is `Dog` and `Animal` is neither `Cat` nor `Dog`).
 
-- **Numerical:** splitting on 5 for the feature `Age` will create two nodes (`Age` ≤ 5 and 5 < `Age`); splitting on 5 and 10 for the feature `Age` will create three nodes (`Age` ≤ 5, 5 ≤ `Age` < 10 and 10 ≤ `Age`).
+- **Numerical:** splitting on 5 for the feature `Age` will create two nodes (`Age` < 5 and 5 ≤ `Age`); splitting on 5 and 10 for the feature `Age` will create three nodes (`Age` < 5, 5 ≤ `Age` < 10 and 10 ≤ `Age`).
 
 Note that for numerical features, missing values are replaced with the mean.
 
@@ -128,7 +118,7 @@ The split editor varies depending of the type of the feature on which the split 
 
 ![](resource/img-doc/split-editor-cat.png)
 
-The upper part is a **stacked histogram** of the target distribution across the values of the feature. Only the ten bins with the most samples are represented, in decreasing order. 
+The upper part is a **stacked histogram** of the target distribution across the values of the feature. Only the ten bins with the most samples are represented, in decreasing order.
 
 The lower part is the editor itself.
 To **create or edit a split**, one has to select one or more values in the list of the values taken by the feature. This list can be filtered by clicking on the magnifying glass on top and using the search bar that subsequently appears. A split **cannot** take a value that has already been selected by another split on the same node; the value must first be unselected from this other split.
@@ -173,7 +163,7 @@ Since the size of an arc is proportional to the number of samples it has, some a
 Use this recipe to score a dataset, using a decision tree made in the webapp as the prediction model.
 
 _Inputs_
-- Dataset with at least all the columns used by the decision tree. If the decision tree uses a numerical feature that has has missing values in the input dataset, they are replaced with the mean of the feature in the dataset used to build the tree.
+- Dataset with at least all the columns used by the decision tree. If the decision tree uses a numerical feature that has missing values in the input dataset, they are replaced with the mean of the feature in the dataset used to build the tree.
 - Folder containing a decision tree from the Interactive Decision Tree Builder webapp
 
 _Output_
@@ -187,14 +177,14 @@ _Output_
 ### Settings
 
 - **Decision tree:** The name of the JSON file where the decision tree is saved. Note that you must include the **.json** extension as well.
-- **Chunk size:** The number of rows loaded at the same time during the scoring.
+- **Chunk size:** The number of rows in each scoring batch.
 
 ## Evaluate recipe
 
 Use this recipe to score a dataset, using a decision tree made in the webapp as the prediction model.
 
 _Inputs_
-- Dataset with at least all the columns used by the decision tree. If the decision tree uses a numerical feature that has has missing values in the input dataset, they are replaced with the mean of the feature in the dataset used to build the tree.
+- Dataset with at least all the columns used by the decision tree. If the decision tree uses a numerical feature that has missing values in the input dataset, they are replaced with the mean of the feature in the dataset used to build the tree.
 - Folder containing a decision tree from the Interactive Decision Tree Builder webapp.
 
 _Outputs_
@@ -211,8 +201,8 @@ _Outputs_
 ### Settings
 
 - **Decision tree:** The name of the JSON file where the decision tree is saved. Note that you must include the **.json** extension as well.
-- **Chunk size:** The number of rows loaded at the same time during the scoring.
-- **Output probabilities:** Whether to output the probabilities of each class in the evaluated dataset. Is checked by default.
+- **Chunk size:** The number of rows in each evaluation batch.
+- **Output probabilities:** Whether to output the probabilities of each class in the evaluated dataset. Checked by default.
 
 - **Filter metrics:** Whether to compute a subset (or no) metrics. Is unchecked by default (ie. all the available metrics will be computed to build the metrics dataset).
 
