@@ -32,7 +32,10 @@ class Tree(object):
     """
     def __init__(self, df, name, target, target_values=None, sample_method='head', sample_size=None, nodes=None, last_index=1,
                  features=None, new_sampling=False):
-        self.df = df.dropna(subset=[target])
+        try:
+            self.df = df.dropna(subset=[target])
+        except KeyError:
+            raise Exception("The target %s is not one of the columns of the dataset" % target)
         self.name = name
         self.last_index = last_index
         self.target = target

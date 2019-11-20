@@ -2,8 +2,6 @@ import pandas as pd
 from dku_idtb_compatibility.utils import safe_str
 
 def check(df, tree, check_prediction):
-    if check_prediction and df.get(tree.target) is None:
-        raise ValueError("The target column %s is missing in the input dataset" % tree.target)
     for col_name, col_usage in tree.features.items():
         if col_usage["nr_uses"] > 0:
             if col_name not in df.columns:
@@ -25,8 +23,11 @@ def score_chunk(tree, df, check_prediction):
 
 def score(tree, input_dataset, chunk_size_param, check_prediction):
     dfs = []
-    check(input_dataset, tree, check_prediction)
+    first_chunk = True
     for df in input_dataset.iter_dataframes(chunksize=chunk_size_param):
+        if first_chunk:
+            check(df, tree, check_prediction)
+            first_chunk = False
         dfs += score_chunk(tree, df, check_prediction)
     full_df = pd.concat(dfs).sort_index()
     proba_columns = ["proba_" + safe_str(target_value) for target_value in tree.target_values]
