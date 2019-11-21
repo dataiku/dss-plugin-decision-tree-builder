@@ -398,6 +398,7 @@
             }
             let filteredCategories = categories.filter(function(elem) {
                 return elem.value.toString().toLowerCase().includes(filter.toLowerCase())
+                        && elem.value !== "No values"
                         && !$scope.selectedSplit.usedValues.has(elem.value);
             });
             if (filteredCategories.some(_ => !$scope.selectedSplit.value.has(_.value))) {
