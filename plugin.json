@@ -8,7 +8,7 @@
     "supportLevel": "TIER2_SUPPORT",
     "icon" : "icon-sitemap",
     "licenseInfo" : "Apache Software License",
-    "url" : "https://www.dataiku.com/community/plugins/info/decision-tree-builder.html",
-    "tags" : ["decision tree", "data exploration"]
+    "url" : "https://www.dataiku.com/dss/plugins/info/decision-tree-builder.html",
+    "tags" : ["Machine Learning", "Visualization"]
   }
 }
