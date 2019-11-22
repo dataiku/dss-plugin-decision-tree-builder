@@ -5,12 +5,10 @@
     "label" : "Interactive Decision Tree Builder",
     "description" : "Build and explore decision trees, and use them to score and evaluate data",
     "author" : "Dataiku (Agathe Guillemot)",
-
+    "supportLevel": "TIER2_SUPPORT",
     "icon" : "icon-sitemap",
     "licenseInfo" : "Apache Software License",
-
     "url" : "https://www.dataiku.com/community/plugins/info/decision-tree-builder.html",
-
     "tags" : ["decision tree", "data exploration"]
   }
 }
