@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="/plugins/decision-tree-builder/resource/angular.min.js" type="text/javascript"></script>
+    <script src="/plugins/decision-tree-builder/resource/spin.min.js" type="text/javascript"></script>
+    <script src="/plugins/decision-tree-builder/resource/js/helpers.js" type="text/javascript"></script>
+    <script src="/plugins/decision-tree-builder/resource/js/treeVisualization.js" type="text/javascript"></script>
+    <script src="/plugins/decision-tree-builder/resource/js/histogram.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="/static/public/styles/1.0.0/fonts.css" />
+    <link rel="stylesheet" href="/static/public/styles/1.0.0/variables.css" />
+    <meta charset="UTF-8"/>
+</head>
+<body ng-app="idtb" ng-controller="IdtbController">
+    <div ng-class="{'create': template == 'create'}"
+        ng-include="template == 'create' ? '/plugins/decision-tree-builder/resource/templates/create.html' : '/plugins/decision-tree-builder/resource/templates/edit.html'"></div>
+</body>

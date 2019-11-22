@@ -1,0 +1,22 @@
+<foreignObject>
+    <div class="tooltip-info">
+        <div class="section">
+            <div class="section-title tooltip-title ellipsed-text" ng-if="binName">{{binName}}</div>
+            <div class="section-title">Probabilities</div>
+            <div class="info-section">
+                <div class="info" ng-repeat="proba in probabilities">
+                    <div class="proba-square" ng-style="{'background-color': colors[proba[0]]}"></div>
+                    <span class="ellipsed-text small-text" title="{{proba[0]}}">{{proba[0]}}:</span>
+                    <span class="very-small-text">&nbsp; {{proba[1].toFixed(3)}}</span>
+                </div>
+            </div>
+        </div>
+        <div class="section section-inline">
+            <div class="section-title">Samples</div>
+            <div class="info samples" style="margin-left: 25px;">
+                <div class="info-samples-absolute small-text">{{samples[0]}}</div>
+                <em class="very-small-text">&nbsp;({{toFixedIfNeeded(samples[1], 2, true)}}%)</em>
+            </div>
+        </div>
+    </div>
+</foreignObject>
