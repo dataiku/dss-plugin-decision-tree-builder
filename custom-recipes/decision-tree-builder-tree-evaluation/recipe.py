@@ -55,7 +55,7 @@ for metric in metrics:
     else:
         schema_metrics.append({"type": "float", "name": metric})
 
-write_with_schema(tree, input_dataset, scored_dataset, scored_df, get_recipe_config()["probabilities"], True)
+write_with_schema(tree, input_dataset, scored_dataset, scored_df_nona, get_recipe_config()["probabilities"], True)
 metrics_dataset.write_schema(schema_metrics)
 with metrics_dataset.get_writer() as writer:
     writer.write_row_dict(metrics_dict)
