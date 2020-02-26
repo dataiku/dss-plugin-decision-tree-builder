@@ -1,6 +1,7 @@
 import math
 import pandas as pd
 from sklearn.tree import _tree, DecisionTreeClassifier
+from dku_idtb_compatibility.utils import safe_str
 
 def apply_cross_entropy(population):
     return lambda sample: pd.Series(cross_entropy(population, sample), index=sample.index)
@@ -55,6 +56,6 @@ def compute_splits(feature_df, target_col, max_num_splits):
                                             presort=True,
                                             random_state=1407)
 
-    tree_estimator.fit(feature_df, target_col)
+    tree_estimator.fit(feature_df, target_col.apply(safe_str))
     thresholds = tree_estimator.tree_.threshold[tree_estimator.tree_.children_left != _tree.TREE_LEAF]
     return sorted(thresholds)
