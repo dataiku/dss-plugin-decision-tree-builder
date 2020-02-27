@@ -9,6 +9,7 @@
     "kind" : "PYTHON",
 
     "selectableFromDataset": "input_dataset",
+    "selectableFromFolder": "folder",
 
     "inputRoles" : [
         {
