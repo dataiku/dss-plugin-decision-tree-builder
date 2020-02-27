@@ -1,6 +1,4 @@
 'use strict';
-var app = angular.module("idtb", []);
-
 app.service("Format", function() {
     return {
         ellipsis: function(text, length) {
