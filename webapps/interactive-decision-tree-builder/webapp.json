@@ -8,6 +8,7 @@
   "baseType": "STANDARD",
   "standardWebAppLibraries": ["d3", "dataiku", "font_awesome"],
   "hasBackend": "true",
+  "noJSSecurity": "true",
 
   "params": [
     {
