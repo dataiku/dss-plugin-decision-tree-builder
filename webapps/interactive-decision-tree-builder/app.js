@@ -626,7 +626,7 @@
         }
 
         $scope.checkBeforeUpdate = function(split, feature) {
-            if (!$scope.treatedAsNum(feature)) {
+            if ($scope.treatedAsNum(feature)) {
                 const belowLowerBound = $scope.treeData[split.left].beginning && $scope.treeData[split.left].beginning > split.value;
                 const aboveUpperBound = $scope.treeData[split.right].end && $scope.treeData[split.right].end < split.value;
                 if (belowLowerBound || aboveUpperBound) {
@@ -651,7 +651,7 @@
                     }
                 }
             }
-            update(split, feature)
+            update(split, feature);
         }
 
         const update = function(split, feature, nodeToBeSplit, nodeToBeMoved) {
