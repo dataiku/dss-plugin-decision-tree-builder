@@ -61,7 +61,7 @@
                 <div class="name-section">
                     Sample size
                 </div>
-                <input type="number" min="1" step="1" ng-model="config.sampleSize">
+                <input type="number" min="1" step="1" ng-model="config.sampleSize" ng-keyup="$event.keyCode == 13 && (config.target || config.file) && edit()">
             </div>
         </div>
     </div>

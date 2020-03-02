@@ -65,6 +65,7 @@
                            type="number"
                            name="split-input"
                            placeholder="Enter a number"
+                           ng-keyup="$event.keyCode == 27 && cancel(split)"
                            ng-model="selectedSplit.value"
                            ng-change="changeNumValue()"
                            step="any"

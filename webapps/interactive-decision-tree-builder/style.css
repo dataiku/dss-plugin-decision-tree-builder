@@ -503,6 +503,7 @@ div[histogram] {
     display: flex;
     width: 70%;
     justify-content: flex-end;
+    align-items: baseline;
 }
 
 .label {
@@ -877,7 +878,7 @@ path.selected, path.hovered {
 
 .button-modal-div {
     float: right;
-} 
+}
 
 .button-modal {
     font-weight: 500;
