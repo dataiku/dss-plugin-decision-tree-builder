@@ -1,0 +1,21 @@
+<div class="modal">
+    <div class="title modal-title">
+        <div>{{modal.title}}</div>
+        <i class="icon icon-grey icon-remove" ng-click="removeModal()"></i>
+    </div>
+    <div class="modal-body" ng-show="modal.msg" ng-class="{'modal-body-error': modal.type === 'error'}">
+        {{modal.msg}}
+    </div>
+    <form name="promptForm" class="modal-body" ng-show="modal.type === 'prompt'" ng-submit="promptForm.$valid && modal.confirmAction()">
+        <div>
+            {{modal.inputLabel}}
+        </div>
+        <input focus-here ng-model="modal.promptResult" required>
+    </form>
+    <div class="modal-footer">
+        <div class="button-modal-div">
+            <button type="button" class="button button-modal" ng-if="modal.type === 'prompt' || modal.type === 'confirm'" ng-click="removeModal()">Cancel</button>
+            <button type="button" class="button button-modal" ng-click="modal.confirmAction()" ng-disabled="modal.type == 'prompt' && promptForm.$invalid">Ok</button>
+        </div>
+    </div>
+</div>

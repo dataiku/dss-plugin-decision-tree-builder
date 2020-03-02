@@ -192,7 +192,7 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
                     scope.loadingHistogram = false;
                 }, function(e) {
                     scope.loadingHistogram = true;
-                    scope.error.msg = e.data;
+                    scope.createModal.error(e.data);
                 });
             }
         } else {

@@ -1,19 +1,15 @@
 (function() {
     'use strict';
 
-    app.controller("IdtbController", function($scope) {
+    app.controller("IdtbController", function($scope, ModalService) {
         $scope.template = "create";
         $scope.setTemplate = function(newTemplate) {
             $scope.template = newTemplate;
         }
-        $scope.error = {}
-        $scope.removeErrModal = function (event) {
-            if (event && !event.target.className.includes("fatal-error-background")) {
-                return;
-            }
-            delete $scope.error.msg;
-        }
         $scope.config = {};
+        $scope.modal = {};
+        $scope.removeModal = ModalService.remove($scope.modal);
+        $scope.createModal = ModalService.create($scope.modal);
     });
 
     app.controller("CreateOrLoadController", function($scope, $http) {
@@ -32,7 +28,7 @@
                     .then(function(response) {
                         $scope.files = response.data.files;
                     }, function(e) {
-                        $scope.error.msg = e.data;
+                        $scope.createModal.error(e.data);
                     });
                 }
             }
@@ -52,7 +48,7 @@
         .then(function(response) {
             $scope.datasets = response.data.datasets;
         }, function(e) {
-            $scope.error.msg = e.data;
+            $scope.createModal.error(e.data);
         });
 
         $scope.$watch("config.dataset", function(nv) {
@@ -61,7 +57,7 @@
                 .then(function(response) {
                     $scope.features = response.data.features;
                 }, function(e) {
-                    $scope.error.msg = e.data;
+                    $scope.createModal.error(e.data);
                 });
             } else {
                 delete $scope.config.target;
@@ -82,7 +78,7 @@
                         $scope.config.sampleSize = fileConfig[nv].sampleSize;
                         $scope.config.target = fileConfig[nv].target;
                     }, function(e) {
-                        $scope.error.msg = e.data;
+                        $scope.createModal.error(e.data);
                     });
                 } else {
                     $scope.config.sampleMethod = fileConfig[nv].sampleMethod;
@@ -167,7 +163,7 @@
                 $scope.splits = {};
             }, function(e) {
                 $scope.loadingTree = false;
-                $scope.error.msg = e.data;
+                $scope.createModal.error(e.data);
             });
         }
 
@@ -189,7 +185,7 @@
                 TreeInteractions.createTree($scope);
             }, function(e) {
                 $scope.loadingTree = false;
-                $scope.error.msg = e.data;
+                $scope.createModal.error(e.data);
             });
         }
 
@@ -214,23 +210,29 @@
         }
 
         $scope.save = function() {
-            const filename = prompt("Save as: ", $scope.config.file);
-            if (filename) {
-                $scope.config.file = filename;
-                $http.post(getWebAppBackendUrl("save"), {"filename": filename + ".json"})
-                .then(function() {
-                    $scope.isSaved = true;
-                }, function(e) {
-                    $scope.error.msg = e.data;
-                });
-            }
+            $scope.createModal.prompt("Filename",
+                                    (filename) => save(filename),
+                                    $scope.config.file,
+                                    "Save as...",
+                                    undefined,
+                                    {"type": "text", "ng-pattern": "/^[_A-Za-z0-9-]+$/", "placeholder": "Use letters, numbers, -, _"});
+        }
+
+        const save = function(filename) {
+            $scope.config.file = filename;
+            $http.post(getWebAppBackendUrl("save"), {"filename": filename + ".json"})
+            .then(function() {
+                $scope.isSaved = true;
+            }, function(e) {
+                $scope.createModal.error(e.data);
+            });
         }
 
         $scope.close = function(force) {
             if (!$scope.isSaved && !force) {
-                if (confirm("Are you sure you want to exit without saving? All unsaved changes will be lost.")) {
-                    $scope.close(true);
-                }
+                $scope.createModal.confirm("Are you sure you want to exit without saving? All unsaved changes will be lost.",
+                                            "Exit without saving",
+                                            () => $scope.close(true))
                 return;
             }
             delete $scope.config.file;
@@ -281,7 +283,7 @@
                     label.text($scope.selectedNode.label ? Format.ellipsis($scope.selectedNode.label, 30) : null);
                 }
             }, function(e) {
-                $scope.error.msg = e.data;
+                $scope.createModal.error(e.data);
             });
         }
 
@@ -321,7 +323,7 @@
                     $scope.createSplit($scope.treatedAsNum(feature));
                 }, function(e) {
                     $scope.loadingHistogram = false;
-                    $scope.error.msg = e.data;
+                    $scope.createModal.error(e.data);
                 });
             } else {
                 $scope.createSplit($scope.treatedAsNum(feature));
@@ -484,8 +486,8 @@
                 $scope.histData[feature] = response.data;
                 $scope.loadingHistogram = false;
             }, function(e) {
-                $scope.error.msg = e.data;
                 $scope.loadingHistogram = false;
+                $scope.createModal.error(e.data);
             });
         }
 
@@ -505,16 +507,17 @@
                 }
         }
 
-        $scope.autosplit = function(maxSplits) {
-            if (maxSplits < 1 || !Number.isInteger(maxSplits)) {
-                maxSplits = prompt("Confirming will automatically create some splits on the current node.\nMaximum number of splits wanted : ");
-                if (maxSplits === null) {
-                    return;
-                }
-                $scope.autosplit(parseFloat(maxSplits));
-                return;
-            }
+        $scope.autosplit = function() {
+            $scope.createModal.prompt("Maximum number of splits",
+                                    (maxSplits) => autosplit(parseFloat(maxSplits)),
+                                    undefined,
+                                    "Auto-create splits",
+                                    "This will automatically create some splits on the currently selected node",
+                                    {min: 1, type: "number", step: 1}
+            );
+        }
 
+        const autosplit = function(maxSplits) {
             $scope.loadingTree = true;
             $http.post(getWebAppBackendUrl("/auto-split"),
                 {nodeId: $scope.selectedNode.id, feature: $scope.selectedNode.featureChildren, maxSplits: maxSplits})
@@ -524,7 +527,8 @@
                 $scope.selectedNode.children_ids = $scope.treeData[$scope.selectedNode.id].children_ids;
                 if (!$scope.selectedNode.children_ids.length) {
                     delete $scope.selectedNode.featureChildren;
-                    alert("No split could be formed"); // cheesy but well
+                    $scope.createModal.alert("No split could be formed", "Auto-creation: no split");
+                    $scope.loadingTree = false;
                     return;
                 }
                 $scope.isSaved = false;
@@ -551,26 +555,30 @@
                 $scope.loadingTree = false;
             }, function(e) {
                 $scope.loadingTree = false;
-                $scope.error.msg = e.data;
+                $scope.createModal.error(e.data);
             });
         }
 
-        $scope.add = function(split, feature) {
-            $scope.loadingTree = true;
-            let nodeToBeSplit;
-             if (!$scope.selectedNode.isLeaf && $scope.treatedAsNum(feature)) {
+        $scope.checkBeforeAdd = function(split, feature) {
+            if (!$scope.selectedNode.isLeaf && $scope.treatedAsNum(feature)) {
                 const newSplitInfo = checkSplitNode($scope.selectedNode, split);
                 // if new split splits another node (ie. value between the lower and upper bound of the node)
                 if (newSplitInfo.left_idx > -1 && newSplitInfo.right_idx > -1) {
-                    nodeToBeSplit = $scope.treeData[$scope.selectedNode.children_ids[newSplitInfo.right_idx]];
-                    if (nodeToBeSplit.children_ids.length
-                            && !confirm("Creating a split at " + split.value + " will affect downstream parts of your decision tree.\
-                            \nBy confirming the addition of this split you will lose all branches below the node '"
-                            + TreeInteractions.decisionRule(nodeToBeSplit, true) + "'")) {
+                    const nodeToBeSplit = $scope.treeData[$scope.selectedNode.children_ids[newSplitInfo.right_idx]];
+                    if (nodeToBeSplit.children_ids.length) {
+                        const msg = "Creating a split at " + split.value + " will affect downstream parts of your decision tree.\
+                            \nYou will lose all branches below the node '"
+                            + TreeInteractions.decisionRule(nodeToBeSplit, true) + "'";
+                        $scope.createModal.confirm(msg, "Split creation: warning", () => add(split, feature, nodeToBeSplit));
                         return;
                     }
                 }
             }
+            add(split, feature);
+        }
+
+        const add = function(split, feature, nodeToBeSplit) {
+            $scope.loadingTree = true;
             delete $scope.selectedSplit;
 
             $http.post(getWebAppBackendUrl("add-split"), {
@@ -613,24 +621,21 @@
                 TreeInteractions.shift($scope.selectedNode.id, $scope, "selected");
             }, function(e) {
                 $scope.loadingTree = false;
-                $scope.error.msg = e.data;
+                $scope.createModal.error(e.data);
             });
         }
 
-        $scope.update = function(split, feature) {
-            $scope.loadingTree = true;
-            let nodeToBeSplit;
-            let nodeToBeMoved;
-            if ($scope.treatedAsNum(feature)) {
+        $scope.checkBeforeUpdate = function(split, feature) {
+            if (!$scope.treatedAsNum(feature)) {
                 const belowLowerBound = $scope.treeData[split.left].beginning && $scope.treeData[split.left].beginning > split.value;
                 const aboveUpperBound = $scope.treeData[split.right].end && $scope.treeData[split.right].end < split.value;
                 if (belowLowerBound || aboveUpperBound) {
                     const newSplitInfo = checkSplitNode($scope.selectedNode, split);
                     if (newSplitInfo.left_idx > -1 && newSplitInfo.right_idx > -1) {
-                        nodeToBeSplit = $scope.treeData[$scope.selectedNode.children_ids[newSplitInfo.right_idx]];
-                        nodeToBeMoved = belowLowerBound ? $scope.treeData[split.left] : $scope.treeData[split.right];
+                        const nodeToBeSplit = $scope.treeData[$scope.selectedNode.children_ids[newSplitInfo.right_idx]];
+                        const nodeToBeMoved = belowLowerBound ? $scope.treeData[split.left] : $scope.treeData[split.right];
                         let askForConfirmation;
-                        let msg = "\nBy confirming the modification of this split you will lose all branches below the node '";
+                        let msg = "\Updating this split  will affect downstream parts of your decision tree. You will lose all branches below the node '";
                         if (nodeToBeSplit.children_ids.length) {
                             msg += TreeInteractions.decisionRule(nodeToBeSplit, true) + "'";
                             askForConfirmation = true;
@@ -639,12 +644,18 @@
                             msg += (askForConfirmation ? " and the node '" : "") +  TreeInteractions.decisionRule(nodeToBeMoved, true) + "'";
                             askForConfirmation = true;
                         }
-                        if (askForConfirmation && !confirm(msg)) {
+                        if (askForConfirmation) {
+                            $scope.createModal.confirm(msg, "Split edit: warning", () => update(split, feature, nodeToBeSplit, nodeToBeMoved));
                             return;
                         }
                     }
                 }
             }
+            update(split, feature)
+        }
+
+        const update = function(split, feature, nodeToBeSplit, nodeToBeMoved) {
+            $scope.loadingTree = true;
             delete $scope.selectedSplit;
 
             $http.post(getWebAppBackendUrl("update-split"), {
@@ -673,36 +684,33 @@
                 TreeInteractions.shift($scope.selectedNode.id, $scope, "selected");
             }, function(e) {
                 $scope.loadingTree = false;
-                $scope.error.msg = e.data;
+                $scope.createModal.error(e.data);
             });
         }
 
         $scope.submit = function(split, feature) {
+            if ($scope.disableAddSplit) return;
             if (split.left) {
-                $scope.update(split, feature);
+                $scope.checkBeforeUpdate(split, feature);
             } else {
-                $scope.add(split, feature);
+                $scope.checkBeforeAdd(split, feature);
             }
         }
 
         $scope.confirmDelete = function(split, splits, feature) {
-            let msg = "By confirming the deletion of this split you will delete ";
+            let msg = "This will delete ";
             if (splits.length > 1) {
-                msg += "the node '" + TreeInteractions.decisionRule($scope.treeData[split.left], true) + "' and lose all the branches below";
+                msg += "the node '" + TreeInteractions.decisionRule($scope.treeData[split.left], true) + "' and all the branches and nodes below";
             } else {
                 msg += "the nodes '"
                         + TreeInteractions.decisionRule($scope.treeData[split.left], true) + "' and '"
-                        + TreeInteractions.decisionRule($scope.treeData[split.right], true) +  "' and lose all the branches below them";
+                        + TreeInteractions.decisionRule($scope.treeData[split.right], true) +  "' and all the branches and nodes below them";
             }
-            if (confirm(msg)) {
-                del(split, feature);
-            }
+            $scope.createModal.confirm(msg, "Delete a split", () => del(split, feature));
         }
 
         $scope.confirmDeleteAll = function() {
-            if (confirm("By confirming the deletion of all the splits at the selected node, you will lose all the branches below it")) {
-                deleteAllSplits();
-            }
+            $scope.createModal.confirm("This will delete all the branches and nodes below the currently selected node", "Delete all splits", deleteAllSplits);
         }
 
         function del(split, feature) {
@@ -731,7 +739,7 @@
                 }
             }, function(e) {
                 $scope.loadingTree = false;
-                $scope.error.msg = e.data;
+                $scope.createModal.error(e.data);
             });
         }
 
@@ -753,7 +761,7 @@
                 TreeInteractions.shift($scope.selectedNode.id, $scope, "selected");
             }, function(e) {
                 $scope.loadingTree = false;
-                $scope.error.msg = e.data;
+                $scope.createModal.error(e.data);
             });
         }
 

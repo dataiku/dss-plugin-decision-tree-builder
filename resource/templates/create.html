@@ -1,19 +1,9 @@
 <div class="panel" ng-controller="CreateOrLoadController">
-    <div ng-if="error.msg"
-        focus-here
-        class="fatal-error-background"
+    <div ng-if="modal.type"
+        class="modal-background"
         tabindex=0
-        ng-keyup="$event.keyCode == 27 && removeErrModal()"
-        ng-click="removeErrModal($event)">
-        <div class="fatal-error">
-            <div class="title fatal-error-title">
-                <div>Backend failed</div>
-                <i class="icon icon-grey icon-remove" ng-click="removeErrModal()"></i>
-            </div>
-            <div class="fatal-error-msg">
-                {{error.msg}}
-            </div>
-        </div>
+        ng-keyup="$event.keyCode == 27 && removeModal()"
+        ng-click="removeModal($event)">
     </div>
     <div class="subpanel">
         <div class="title">Create or load a tree</div>

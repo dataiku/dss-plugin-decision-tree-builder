@@ -113,7 +113,6 @@ select {
 #start-button-div > .button {
     background-color: var(--blue-lighten-1);
     color: var(--white);
-    border: none;
 }
 
 #start-button-div > .button:disabled {
@@ -123,7 +122,6 @@ select {
 #start-button-div > .button:enabled:focus {
     background-color: var(--blue-darken-2);
 }
-
 
 #start-button-div > .button:enabled:hover {
     background-color: var(--blue);
@@ -147,29 +145,58 @@ select {
 	height: 60px;
 }
 
-.button {
-    text-transform: uppercase;
-    border-radius: 0px;
-    padding : 5px 20px;
-    margin-left : 5px;
-    border-width: 1px;
-    border-style: solid;
-    background-color : var(--white);
-    border-color: var(--grey-lighten-2);
-    color: var(--grey-lighten-2);
-    cursor: pointer;
+.button-div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-width: 100px;
+    background-color: var(--white);
 }
 
-.button:hover:enabled{
+.button {
+    text-transform: uppercase;
+    padding : 5px 20px;
+    margin-left : 5px;
+    cursor: pointer;
+    background-color : var(--white);
+    color: var(--grey-lighten-2);
+    border: none;
+}
+
+.button-with-borders {
+    border-radius: 0px;
+    border-color: var(--grey-lighten-2);
+    border-width: 1px;
+    border-style: solid;
+}
+
+.button-with-borders:hover:enabled {
     z-index:10;
     background-color : var(--grey-lighten-1);
     color : var(--white);
 }
 
-.button:disabled{
+.button:disabled {
     cursor: not-allowed;
+}
+
+.button-with-borders:disabled {
     border: 1px solid var(--grey-lighten-6);
     color: var(--grey-lighten-6);
+}
+
+.button-save {
+    border-color: var(--blue);
+    color : var(--blue);
+}
+
+.button-save:hover:enabled {
+    background-color: var(--blue);
+}
+
+.button-save:disabled {
+    border-color: var(--blue-lighten-4);
+    color: var(--blue-lighten-4);
 }
 
 .tree-visualization {
@@ -566,29 +593,6 @@ div[histogram] {
     height: 25px;
 }
 
-.button-div {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    min-width: 100px;
-    background-color: var(--white);
-}
-
-.button-save {
-    border-color: var(--blue);
-    color : var(--blue);
-}
-
-.button-save:hover:enabled {
-    background-color: var(--blue);
-    color: var(--white);
-}
-
-.button-save:disabled {
-    border-color: var(--blue-lighten-4);
-    color: var(--blue-lighten-4);
-}
-
 .section {
     padding-left: 5%;
 }
@@ -865,27 +869,70 @@ path.selected, path.hovered {
     font-size: 16px;
 }
 
-.fatal-error {
-    max-height: 300px;
+/*MODALS*/
+.modal-footer {
+    height: 30px;
+    padding-top: 20px;
+}
+
+.button-modal-div {
+    float: right;
+} 
+
+.button-modal {
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.button-modal:disabled {
+    color: var(--grey-lighten-5);
+}
+
+.button-modal:enabled:hover {
+    color: black;
+    background-color: var(--grey-lighten-6);
+}
+
+.button-modal:enabled:active {
+    color: black;
+    background-color: var(--grey-lighten-5);
+}
+
+.modal {
+    max-height: 360px;
     width: 500px;
     padding: 20px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-    background-color: var(--grey-lighten-7);
-    color: var(--error-red);
+    background-color: var(--white);
 }
 
-.fatal-error-title {
+.modal-title {
     justify-content: space-between;
 }
 
-.fatal-error-msg {
+.modal-body {
     overflow: auto;
     max-height: 250px;
     white-space: pre-line;
     text-align: justify;
+    font-size: 14px;
 }
 
-.fatal-error-background {
+.modal-body-error {
+    color: var(--error-red);
+}
+
+[name=promptForm] {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    padding-bottom: 2px;
+    padding-right: 2px;
+    min-width: 60%;
+    max-width: 80%;
+}
+
+.modal-background {
     display: flex;
     justify-content: center;
     align-items: center;

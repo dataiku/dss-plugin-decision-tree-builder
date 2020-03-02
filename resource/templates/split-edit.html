@@ -40,7 +40,7 @@
             <div ng-if="search.list == 'split'" class="header-div selected-split-panel-search-bar">
                 <input focus-here class="search-bar" placeholder="Search in {{selectedNode.featureChildren}}"
                        ng-model="search.string" ng-keyup="$event.keyCode == 27 && (search.list = undefined)">
-                <i class="icon icon-remove" ng-click="iconClick('split')"></i>
+                <i class="icon icon-grey icon-remove" ng-click="iconClick('split')"></i>
             </div>
             <div class="header-div" ng-if="!treatedAsNum(selectedNode.featureChildren)">
                 <i class="icon icon-grey icon-search"
@@ -53,14 +53,14 @@
             <div class="edit-row-sub" ng-if="treatedAsNum(selectedNode.featureChildren)">
                 <div class="autosplit"
                      ng-if="!selectedSplit.left"
-                     ng-click="!selectedNode.children_ids.length && selectedNode.probabilities.length > 1 && autosplit(0)"
+                     ng-click="!selectedNode.children_ids.length && selectedNode.probabilities.length > 1 && autosplit()"
                      ng-class="(!selectedNode.children_ids.length && selectedNode.probabilities.length > 1) ? 'autosplit-enabled' : 'autosplit-disabled'"
                      ng-attr-title="{{selectedNode.children_ids.length && 'This node already has splits'
                                     || selectedNode.probabilities.length < 2 && 'The target takes one or less value in this sample'
                                     || null}}">
                     Auto create
                 </div>
-                <form ng-submit="!disableAddSplit && submit(selectedSplit, selectedNode.featureChildren)">
+                <form ng-submit="submit(selectedSplit, selectedNode.featureChildren)">
                     <input focus-here
                            type="number"
                            name="split-input"
@@ -87,17 +87,17 @@
                 </div>
             </div>
             <div class="button-div">
-                <button class="button" ng-click="cancel(split)">Cancel</button>
-                <button class="button button-save"
+                <button class="button button-with-borders" ng-click="cancel(split)">Cancel</button>
+                <button class="button button-with-borders button-save"
                         type="submit"
-                        ng-click="add(selectedSplit, selectedNode.featureChildren)"
+                        ng-click="checkBeforeAdd(selectedSplit, selectedNode.featureChildren)"
                         ng-disabled="disableAddSplit "
                         ng-if="!selectedSplit.left">
                     <i class="icon-plus"></i>&nbsp;Create
                 </button>
-                <button class="button button-save"
+                <button class="button button-with-borders button-save"
                         type="submit"
-                        ng-click="update(selectedSplit, selectedNode.featureChildren)"
+                        ng-click="checkBeforeUpdate(selectedSplit, selectedNode.featureChildren)"
                         ng-disabled="valueNotChanged(treeData[selectedSplit.left], selectedSplit.value) || disableAddSplit"
                         ng-if="selectedSplit.left">
                     <i class="icon-pencil"></i>
