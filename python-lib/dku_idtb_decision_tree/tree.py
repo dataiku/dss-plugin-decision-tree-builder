@@ -80,12 +80,24 @@ class Tree(object):
             node_id = node.parent_id
         return df
 
+    @staticmethod
+    def _get_target_distrib_dict(target_distrib, target_values_are_floats):
+        if target_values_are_floats:
+            target_distrib_parsed = {}
+            for target_value, count in target_distrib.items():
+                if target_value.is_intger():
+                    target_distrib_parsed[int(target_value)] = count
+                else:
+                    target_distrib_parsed[target_value] = count
+        return target_distrib.to_dict()
+
     def get_stats(self, i, col):
         node = self.get_node(i)
         filtered_df = self.get_filtered_df(node, self.df)
         column = filtered_df[col]
         target_column = filtered_df[self.target]
         stats = {}
+        target_values_are_floats = pd.api.types.is_float_dtype(target_column)
         if col in node.treated_as_numerical:
             if not column.empty:
                 stats.update({"mean": column.mean(), "max": column.max(), "min": column.min()})
@@ -98,7 +110,7 @@ class Tree(object):
                 stats["bins"] = []
                 for interval, count in col_distrib.items():
                     stats["bins"].append({"value": safe_str(interval),
-                                          "target_distrib": target_distrib[interval].to_dict() if count > 0 else {},
+                                          "target_distrib": Tree._get_target_distrib_dict(target_distrib[interval], target_values_are_floats) if count > 0 else {},
                                           "mid": interval.mid,
                                           "count": count})
             else:
@@ -114,7 +126,9 @@ class Tree(object):
             empty_values -= set(col_distrib.index)
             stats["same_target_distrib"] = True
             for value in col_distrib.index:
-                stats["bins"].append({"value": value, "target_distrib": target_distrib[value].to_dict(), "count": col_distrib[value]})
+                stats["bins"].append({"value": value,
+                                      "target_distrib": Tree._get_target_distrib_dict(target_distrib[value], target_values_are_floats),
+                                      "count": col_distrib[value]})
                 if stats.get("same_target_distrib") and stats["bins"][0]["target_distrib"] != stats["bins"][-1]["target_distrib"]:
                     del stats["same_target_distrib"]
         else:
