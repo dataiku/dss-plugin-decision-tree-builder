@@ -85,7 +85,7 @@ class Tree(object):
         if target_values_are_floats:
             target_distrib_parsed = {}
             for target_value, count in target_distrib.items():
-                if target_value.is_intger():
+                if target_value.is_integer():
                     target_distrib_parsed[int(target_value)] = count
                 else:
                     target_distrib_parsed[target_value] = count
