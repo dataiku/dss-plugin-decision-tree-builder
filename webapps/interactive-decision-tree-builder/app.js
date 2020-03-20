@@ -118,8 +118,7 @@
                 if (ov == "edit") {
                     TreeInteractions.addVizTooltips($scope);
                     $timeout(function() {
-                        TreeInteractions.select(0, $scope);
-                        $scope.zoomBack();
+                        TreeInteractions.select(0, $scope, true);
                     });
                 }
             }
@@ -132,8 +131,7 @@
                 }
                 if (ov == "viz") {
                     $timeout(function() {
-                        TreeInteractions.select(0, $scope);
-                        $scope.zoomBack();
+                        TreeInteractions.select(0, $scope, true);
                     });
                 }
             }
@@ -533,8 +531,7 @@
                 }
                 $scope.isSaved = false;
                 recreateSplits([$scope.selectedNode]);
-                TreeInteractions.update($scope);
-                TreeInteractions.shift($scope.selectedNode.id, $scope, "selected");
+                TreeInteractions.select($scope.selectedNode.id, $scope);
 
                 if ($scope.selectedNode.isLeaf) {
                     $scope.selectedNode.isLeaf = false;
@@ -617,8 +614,7 @@
                     d3.select("#node-" + nodeToBeSplit.id).select(".feature-children").remove();
                     delete $scope.splits[nodeToBeSplit.id];
                 }
-                TreeInteractions.update($scope);
-                TreeInteractions.shift($scope.selectedNode.id, $scope, "selected");
+                TreeInteractions.select($scope.selectedNode.id, $scope);
             }, function(e) {
                 $scope.loadingTree = false;
                 $scope.createModal.error(e.data);
@@ -680,8 +676,7 @@
                     d3.select("#node-" + nodeToBeMoved.id).select(".feature-children").remove();
                     delete $scope.splits[nodeToBeMoved.id];
                 }
-                TreeInteractions.update($scope);
-                TreeInteractions.shift($scope.selectedNode.id, $scope, "selected");
+                TreeInteractions.select($scope.selectedNode.id, $scope);
             }, function(e) {
                 $scope.loadingTree = false;
                 $scope.createModal.error(e.data);
@@ -727,8 +722,7 @@
 
                 $scope.treeData = response.data["nodes"];
                 $scope.selectedNode.children_ids =  $scope.treeData[$scope.selectedNode.id].children_ids;
-                TreeInteractions.update($scope);
-                TreeInteractions.shift($scope.selectedNode.id, $scope, "selected");
+                TreeInteractions.select($scope.selectedNode.id, $scope);
                 if ($scope.splits[$scope.selectedNode.id].length == 1) {
                     $scope.selectedNode.isLeaf = true;
                     delete $scope.splits[$scope.selectedNode.id];
@@ -757,8 +751,7 @@
                 d3.select("#node-" + $scope.selectedNode.id).select(".feature-children").remove();
 
                 $scope.treeData = response.data;
-                TreeInteractions.update($scope);
-                TreeInteractions.shift($scope.selectedNode.id, $scope, "selected");
+                TreeInteractions.select($scope.selectedNode.id, $scope);
             }, function(e) {
                 $scope.loadingTree = false;
                 $scope.createModal.error(e.data);

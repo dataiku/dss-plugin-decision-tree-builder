@@ -1,16 +1,18 @@
 'use strict';
 app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
     let svg, tree, currentPath = new Set();
-    const side = 30;
-    const drag = d3.behavior.drag().origin(function(d) { return d; })
+    const side = 30, maxZoom = 3;
 
     const zoom = function() {
         svg.attr("transform",  "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")")
     };
 
     const zoomListener = d3.behavior.zoom()
-        .scaleExtent([0, 3])
-        .on("zoom", zoom);
+        .on("zoom", function() {
+            const svgArea = svg.node().getBoundingClientRect().width * svg.node().getBoundingClientRect().height;
+            zoomListener.scaleExtent([svgArea < 100 ? zoomListener.scale() :  0, maxZoom])
+            zoom();
+    });
 
     const nodeValues = function(d) {
         if (d.values) {
@@ -135,23 +137,23 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
     }
 
     const zoomFit = function(vizMode) {
-        const scale = zoomListener.scale(),
-            treePanel = d3.select(".tree").node().getBoundingClientRect(),
-            svgDim = svg.node().getBoundingClientRect();
-        const ratioX = treePanel.width / (svgDim.width/scale),
-            ratioY = treePanel.height / ((svgDim.height+(vizMode ? 40 : 20))/scale);
+        const treePanel = d3.select(".tree").node().getBoundingClientRect(),
+            svgDim = svg.node().getBBox();
+        const leftOffset = 10, topOffset = vizMode ? 40 : 20;
+        const scaleX = treePanel.width / (svgDim.width + leftOffset),
+            scaleY = treePanel.height / (svgDim.height + topOffset)
+        const scale = Math.min(scaleX, scaleY, maxZoom);
 
-        const ratio = Math.min(ratioX, ratioY, 1);
         let leftTranslate;
-        if ((-zoomListener.translate()[0] + svgDim.right)*(ratio/scale) > treePanel.width / 2) {
-            leftTranslate = 8 + (zoomListener.translate()[0] - svgDim.left)*(ratio/scale);
+        if (scale == maxZoom) {
+            leftTranslate = treePanel.width / 2;
         } else {
-            leftTranslate =  treePanel.width / 2;
+            leftTranslate = Math.abs(svgDim.x)*scale + leftOffset;
         }
-        zoomListener.translate([leftTranslate, (vizMode ? 40 : 20)]).scale(ratio);
-        svg.transition(400)
-            .attr("transform", "translate(" + leftTranslate + "," + (vizMode ? 40 : 20) +")scale(" + ratio + ")");
-    };
+
+        zoomListener.translate([leftTranslate, topOffset]).scale(scale);
+        svg.transition().duration(400).attr("transform", "translate(" + leftTranslate + "," + topOffset +")scale(" + scale + ")");
+    }
 
     const centerOnNode = function(selectedNode, unzoom) {
         const scale = unzoom ? 1 : zoomListener.scale(),
@@ -166,9 +168,8 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
         zoomListener.translate([x, y]).scale(scale);
     }
 
-    const select = function(id, scope) {
+    const select = function(id, scope, unzoom) {
         if(scope.selectedNode) {
-            //if (scope.selectedNode.id == id) {return;}
             delete scope.selectedNode.editLabel;
         }
         if (scope.selectedNode) {
@@ -191,7 +192,7 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
                     scope.selectedNode.featureChildren = scope.treeData[firstChild].feature;
                     scope.loadingHistogram = false;
                 }, function(e) {
-                    scope.loadingHistogram = true;
+                    scope.loadingHistogram = false;
                     scope.createModal.error(e.data);
                 });
             }
@@ -199,6 +200,7 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
             scope.selectedNode.isLeaf = true;
             delete scope.selectedNode.featureChildren;
         }
+        centerOnNode(scope.selectedNode, unzoom);
     }
 
     const addVizTooltips = function(scope) {
@@ -231,8 +233,7 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
             .append("g");
 
         update(scope);
-        select(0, scope);
-        zoomBack(scope.selectedNode);
+        select(0, scope, true);
     }
 
     const update = function(scope) {
@@ -276,7 +277,6 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
         .on("click", function(d) {
             if (scope.selectedNode && scope.selectedNode.id == d.id) {return;}
             $timeout(select(d.id, scope));
-            centerOnNode(scope.selectedNode);
         })
         .on("mouseenter", function(d) {
             if (currentPath.has(d.id)) { return;}
@@ -287,8 +287,7 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
             if (currentPath.has(d.id)) { return;}
             shift(d.id, scope, "hovered", true);
             hideUnhovered();
-        })
-        .call(drag);
+        });
 
         nodeEnter.filter(d => d.id > 0)
         .append("text")
@@ -347,14 +346,12 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
     }
 
     return {
-        update: update,
         createTree: createTree,
         decisionRule: decisionRule,
         zoomFit: zoomFit,
         zoomBack: zoomBack,
         addVizTooltips: addVizTooltips,
-        select: select,
-        shift: shift
+        select: select
     }
 });
 
