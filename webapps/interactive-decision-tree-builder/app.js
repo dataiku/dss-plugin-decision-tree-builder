@@ -79,7 +79,7 @@
         $scope.$watch("config.file", function(nv) {
             if (nv) {
                 if (!fileConfig[nv]) {
-                    $http.get(getWebAppBackendUrl("get-config/"+nv))
+                    $http.get(getWebAppBackendUrl("get-config/"+encodeURIComponent(nv)))
                     .then(function(response) {
                         fileConfig[nv] = response.data;
                         if (!fileConfig[nv].sampleSize) {
@@ -225,7 +225,7 @@
                                     $scope.config.file,
                                     "Save as...",
                                     undefined,
-                                    {"type": "text", "ng-pattern": "/^[_A-Za-z0-9-]+$/", "placeholder": "Use letters, numbers, -, _"});
+                                    {"type": "text", "ng-pattern": "/^[/_A-Za-z0-9-]+$/", "placeholder": "Letters, numbers, /, -, _"});
         }
 
         $scope.saveShortcut = function(event) {

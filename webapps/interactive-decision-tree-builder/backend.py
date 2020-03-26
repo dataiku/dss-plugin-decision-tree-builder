@@ -36,16 +36,17 @@ def get_datasets():
 @app.route("/get-files")
 def get_files():
     try:
-        return jsonify(files=folder.list_paths_in_partition())
+        files = [file_name for file_name in folder.list_paths_in_partition() if ".json" in file_name]
+        return jsonify(files=files)
     except:
         logger.error(traceback.format_exc())
         return traceback.format_exc(), 500
 
-@app.route("/get-config/<filename>")
+@app.route("/get-config/<path:filename>")
 def get_config(filename):
     try:
-        file = folder.read_json(filename)
-        return json.dumps({"sampleMethod": file["sample_method"], "sampleSize": file["sample_size"], "target": file["target"]})
+        jsonFile = folder.read_json(filename)
+        return json.dumps({"sampleMethod": jsonFile["sample_method"], "sampleSize": jsonFile["sample_size"], "target": jsonFile["target"]})
     except:
         logger.error(traceback.format_exc())
         return traceback.format_exc(), 500
