@@ -8,7 +8,11 @@
         }
         $scope.config = {};
         $scope.modal = {};
-        $scope.removeModal = ModalService.remove($scope.modal);
+        $scope.removeModal = function(event) {
+            if (ModalService.remove($scope.modal)(event)) {
+                angular.element(".template").focus();
+            }
+        };
         $scope.createModal = ModalService.create($scope.modal);
     });
 
@@ -36,7 +40,7 @@
 
         $scope.$watch("config.sampleMethod", function(nv, ov) {
             if(nv) {
-                if (!ov) {
+                if (!ov && !$scope.config.hasOwnProperty("sampleSize")) {
                     $scope.config.sampleSize = 10000;
                 }
             } else {
@@ -51,14 +55,21 @@
             $scope.createModal.error(e.data);
         });
 
+        const featuresPerDataset = {};
         $scope.$watch("config.dataset", function(nv) {
             if (nv) {
-                $http.get(getWebAppBackendUrl("get-features/"+$scope.config.dataset))
-                .then(function(response) {
-                    $scope.features = response.data.features;
-                }, function(e) {
-                    $scope.createModal.error(e.data);
-                });
+                if (!featuresPerDataset[nv]) {
+                    $http.get(getWebAppBackendUrl("get-features/"+$scope.config.dataset))
+                    .then(function(response) {
+                        $scope.features = response.data.features;
+                        featuresPerDataset[nv] = response.data.features;
+                    }, function(e) {
+                        delete $scope.features;
+                        $scope.createModal.error(e.data);
+                    });
+                } else {
+                    $scope.features = featuresPerDataset[nv];
+                }
             } else {
                 delete $scope.config.target;
             }
@@ -78,6 +89,7 @@
                         $scope.config.sampleSize = fileConfig[nv].sampleSize;
                         $scope.config.target = fileConfig[nv].target;
                     }, function(e) {
+                        delete $scope.target;
                         $scope.createModal.error(e.data);
                     });
                 } else {
@@ -214,6 +226,13 @@
                                     "Save as...",
                                     undefined,
                                     {"type": "text", "ng-pattern": "/^[_A-Za-z0-9-]+$/", "placeholder": "Use letters, numbers, -, _"});
+        }
+
+        $scope.saveShortcut = function(event) {
+            if (event.key === 's' && (event.metaKey || event.ctrlKey)) {
+                $scope.save();
+                event.preventDefault();
+            }
         }
 
         const save = function(filename) {

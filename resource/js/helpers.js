@@ -58,12 +58,11 @@ app.directive("spinner", function () {
 app.service("ModalService", function() {
     const remove = function(config) {
         return function(event) {
-            if (event && !event.target.className.includes("modal-background")) {
-                return;
-            }
+            if (event && !event.target.className.includes("modal-background")) return false;
             for (const key in config) {
                 delete config[key];
             }
+            return true;
         }
     }
     return {
@@ -74,30 +73,21 @@ app.service("ModalService", function() {
                         type: "confirm",
                         msg: msg,
                         title: title,
-                        confirmAction: function() {
-                            confirmAction();
-                            remove(config)();
-                        }
+                        confirmAction: confirmAction
                     });
                 },
                 error: function(msg) {
                     Object.assign(config, {
                         type: "error",
                         msg: msg,
-                        title: "Backend error",
-                        confirmAction: function() {
-                            remove(config)();
-                        }
+                        title: "Backend error"
                     });
                 },
                 alert: function(msg, title) {
                     Object.assign(config, {
                         type: "alert",
                         msg: msg,
-                        title: title,
-                        confirmAction: function() {
-                            remove(config)();
-                        }
+                        title: title
                     });
                 },
                 prompt: function(inputLabel, confirmAction, res, title, msg, attrs) {
@@ -110,7 +100,6 @@ app.service("ModalService", function() {
                         conditions: attrs,
                         confirmAction: function() {
                             confirmAction(config.promptResult);
-                            remove(config)();
                         }
                     });
                 }
