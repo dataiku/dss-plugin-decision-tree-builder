@@ -132,17 +132,17 @@ select {
 }
 
 .spinner-container {
-	position: relative;
-	top: 50%;
-	left: 50%;
-	z-index: 1000000;
-	margin: -30px 0 0 -30px;
-    border-radius: 30px;
-	background: rgba(0,0,0,0.5);
-    color: var(--white);
-	display: inline-block;
-	width: 60px;
-	height: 60px;
+   position: relative;
+   top: 50%;
+   left: 50%;
+   z-index: 1000000;
+   margin: -30px 0 0 -30px;
+   border-radius: 30px;
+   background: rgba(0,0,0,0.5);
+   color: var(--white);
+   display: inline-block;
+   width: 60px;
+   height: 60px;
 }
 
 .button-div {
@@ -216,9 +216,42 @@ select {
     background-color: var(--grey-lighten-7);
     align-items: center;
     justify-content: flex-end;
+    border-bottom: 1px solid var(--grey-lighten-5);
+}
+
+.color-picker {
+    width: 150px;
+    height: 210px;
+    position: absolute;
+    top: 40px;
+    right: 220px;
+    background: var(--grey-lighten-7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-top: 1px solid var(--grey-lighten-5);
+}
+
+.color-bars {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    cursor: pointer;
+}
+
+.color-bars-small {
+    padding-right: 5px;
+    height: 80%;
+}
+
+.color-bar {
+    display: inline-block;
+    width: 8px;
+    height: 100%;
 }
 
 .icons-div {
+    height: 80%;
     padding: 20px;
     display: flex;
     align-items: center;
@@ -227,14 +260,14 @@ select {
 }
 
 .icons-div-tree {
-    width: 250px;
+    width: 300px;
 }
 
 .icons-div-sun {
-    width: 180px;
+    width: 230px;
 }
 
-.icons-div > img:hover {
+.icons-div > img:hover, .icons-div > ul:hover {
     opacity: .7;
 }
 
@@ -267,6 +300,10 @@ select {
 
 .icons-toggle {
     display: flex;
+}
+
+.icon.icon-tint {
+    height: 20px;
 }
 
 .icon.sunburst {
@@ -648,6 +685,10 @@ div[histogram] {
     padding-top: 10px;
 }
 
+.border-selected {
+    border: 1px #3b99fc solid;
+}
+
 .row {
     background: var(--white);
     color: var(--grey-lighten-2);
@@ -670,6 +711,10 @@ div[histogram] {
     cursor: pointer;
 }
 
+.row-feature:hover  {
+    background: var(--grey-lighten-6);
+}
+
 .row-feature-split {
     margin-bottom: 2%;
     margin-left: 5%;
@@ -678,6 +723,38 @@ div[histogram] {
 
 .row-split {
     justify-content: space-between;
+}
+
+.row-color-picker {
+    width: 80%;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 2% 5%;
+}
+
+.row-color-picker:hover {
+    background: var(--grey-lighten-6);
+}
+
+.record-cat {
+    cursor: pointer;
+}
+
+.record-cat-selectable:hover  {
+    background: var(--grey-lighten-6);
+}
+
+.record-cat-disabled {
+    background: var(--grey-lighten-7);
+    color: var(--grey-lighten-5);
+}
+
+.record-cat-selected {
+    background: var(--blue-lighten-5);
+}
+
+.record-cat-selected:hover {
+    background: var(--blue-lighten-4);
 }
 
 .ellipsed-text {
@@ -840,7 +917,7 @@ path.selected, path.hovered {
     width: 600px;
 }
 
-#sunburst {
+.tree-sunburst {
     width: 100%;
     height: calc(100% - 40px);
     display: flex;

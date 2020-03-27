@@ -119,9 +119,11 @@
             <div>proportion</div>
         </div>
         <div class="table-records">
-            <div class="record"
+            <div class="record record-cat"
                  ng-repeat="bin in histData[selectedNode.featureChildren].bins"
-                 ng-style="styleRecord(bin.value, selectedSplit, selectedSplit.usedValues.has(bin.value))"
+                 ng-class="{'record-cat-selected': selectedSplit.value && selectedSplit.value.has(bin.value),
+                            'record-cat-disabled': selectedSplit.usedValues.has(bin.value),
+                            'record-cat-selectable': !selectedSplit.usedValues.has(bin.value) && (!selectedSplit.value || !selectedSplit.value.has(bin.value))}"
                  ng-click="!selectedSplit.usedValues.has(bin.value) && changeCatValue(bin.value, $index, $event)"
                  ng-if="bin.value != 'No values' && (search.list != 'split' || bin.value.toString().toLowerCase().includes(search.string.toLowerCase()))">
                 <div class="ellipsed-text small-text" title="{{bin.value}}">

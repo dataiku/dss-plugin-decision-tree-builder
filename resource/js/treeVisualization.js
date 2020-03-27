@@ -169,7 +169,7 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
         zoomListener.translate([x, y]).scale(scale);
     }
 
-    const select = function(id, scope, unzoom) {
+    const select = function(id, scope, unzoom, noRecenter) {
         if(scope.selectedNode) {
             delete scope.selectedNode.editLabel;
         }
@@ -201,7 +201,10 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
             scope.selectedNode.isLeaf = true;
             delete scope.selectedNode.featureChildren;
         }
-        centerOnNode(scope.selectedNode, unzoom);
+
+        if (!noRecenter) {
+            centerOnNode(scope.selectedNode, unzoom);
+        }
     }
 
     const addVizTooltips = function(scope) {
@@ -255,7 +258,7 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
         });
 
         node.select("rect")
-        .style("fill", function(d) {return scope.colors[d.prediction] || "black"});
+        .style("fill", function(d) {return scope.colors[d.prediction] || "black"});
 
         node.select(".decision-rule")
         .text(d => nodeValues(d));
@@ -346,13 +349,18 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
         .attr("stroke-opacity", ".8");
     }
 
+    const updateTooltipColors = function(colors) {
+        d3.selectAll("[tooltip]").selectAll("path").attr("fill", d => colors[d.data[0]]);
+    }
+
     return {
         createTree: createTree,
         decisionRule: decisionRule,
         zoomFit: zoomFit,
         zoomBack: zoomBack,
         addVizTooltips: addVizTooltips,
-        select: select
+        select: select,
+        updateTooltipColors: updateTooltipColors
     }
 });
 
@@ -384,7 +392,9 @@ app.service("SunburstInteractions", function(Format, TreeInteractions) {
     return points;
     }
 
+    let currentScale;
     const createSun = function(treeData, colors) {
+        currentScale = colors;
         const vis = d3.select("#chart")
         .append("svg")
         .attr("width", "100%")
@@ -446,7 +456,7 @@ app.service("SunburstInteractions", function(Format, TreeInteractions) {
 
             // Fade all the segments.
             d3.selectAll("path").style("opacity", d => d.depth ? 0.3 : 0);
-            updateBreadcrumbs(d, d.samples[0] + " samples", colors);
+            updateBreadcrumbs(d, d.samples[0] + " samples", currentScale);
         }
 
         const mouseleave = function(d) {
@@ -473,7 +483,7 @@ app.service("SunburstInteractions", function(Format, TreeInteractions) {
             .select("path")
             .attr("d", arc)
             .style("opacity", d => d.depth ? null : 0)
-            .style("fill", d => colors[d.prediction])
+            .style("fill", d => currentScale[d.prediction])
             .style("cursor", d => d.depth > 1 ? "pointer" : null);
 
             data.enter()
@@ -487,7 +497,7 @@ app.service("SunburstInteractions", function(Format, TreeInteractions) {
             })
             .attr("d", arc)
             .attr("fill-rule", "evenodd")
-            .style("fill", d => colors[d.prediction])
+            .style("fill", d => currentScale[d.prediction])
             .style("cursor", d => d.depth > 1 ? "pointer" : null)
             .style("opacity", d => d.depth ? null : 0)
             .on("mouseenter", function(d) {
@@ -527,7 +537,7 @@ app.service("SunburstInteractions", function(Format, TreeInteractions) {
         const g = d3.select("#trail");
 
         let crumbs = 0;
-        let sunburstContainerHeight = d3.select("#sunburst").node().getBoundingClientRect().height;
+        let sunburstContainerHeight = d3.select(".tree-sunburst").node().getBoundingClientRect().height;
         while (node.parent && crumbs < Math.floor(sunburstContainerHeight / (b.h+b.s))) {
             g.insert("g", ":first-child")
                 .attr("id", "bread-"+node.id)
@@ -581,7 +591,15 @@ app.service("SunburstInteractions", function(Format, TreeInteractions) {
             .text(sampleString);
     }
 
+    const updateColors = function(colors) {
+        d3.select("#container").selectAll("path")
+        .style("fill", d => colors[d.prediction]);
+
+        currentScale = colors;
+    }
+
     return {
-        createSun: createSun
+        createSun: createSun,
+        updateColors: updateColors
     }
 });
