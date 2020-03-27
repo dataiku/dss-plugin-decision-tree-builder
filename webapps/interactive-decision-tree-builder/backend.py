@@ -1,7 +1,7 @@
 import dataiku
 from dataiku.customwebapp import get_webapp_config
 from flask import jsonify, request
-import traceback, json
+import traceback, json, logging
 from dku_idtb_decision_tree.tree import Tree
 from dku_idtb_decision_tree.tree_factory import TreeFactory
 from dku_idtb_decision_tree.node import Node
@@ -10,6 +10,9 @@ from dku_idtb_compatibility.utils import safe_str, safe_write_json
 
 from dataiku.core.dkujson import DKUJSONEncoder
 app.json_encoder = DKUJSONEncoder
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format="IDTB %(levelname)s - %(message)s")
 
 # initialization of the backend
 try:

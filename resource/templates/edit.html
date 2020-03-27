@@ -53,7 +53,7 @@
                 <div class="row-color-picker row"
                      ng-repeat="(name, scale) in scales"
                      ng-class="{'border-selected': scale == selectedScale}"
-                     ng-click="setScale(name)">
+                     ng-click="scale != selectedScale && setScale(name)">
                     <ul class="color-bars-small color-bars">
                         <li ng-repeat="(targetValue, color) in displayScale(scale)"
                             class="color-bar"
