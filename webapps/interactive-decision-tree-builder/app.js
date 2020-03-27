@@ -622,18 +622,14 @@
                     .text(Format.ellipsis(feature, 20));
                 }
 
-                const left = response.data.left, right = response.data.right, parent = response.data.parent;
-                $scope.treeData[left.id] = left;
-                $scope.treeData[right.id] = right;
-                $scope.treeData[parent.id] = parent;
-                $scope.selectedNode.children_ids = parent.children_ids;
+                $scope.treeData = response.data;
+                TreeInteractions.select($scope.selectedNode.id, $scope);
                 recreateSplits([$scope.selectedNode]);
                 if (nodeToBeSplit) {
                     nodeToBeSplit = $scope.treeData[nodeToBeSplit.id];
                     d3.select("#node-" + nodeToBeSplit.id).select(".feature-children").remove();
                     delete $scope.splits[nodeToBeSplit.id];
                 }
-                TreeInteractions.select($scope.selectedNode.id, $scope);
             }, function(e) {
                 $scope.loadingTree = false;
                 $scope.createModal.error(e.data);
@@ -683,7 +679,7 @@
                 $scope.isSaved = false;
                 $scope.loadingTree = false;
                 $scope.treeData = response.data;
-                $scope.selectedNode.children_ids = $scope.treeData[$scope.selectedNode.id].children_ids;
+                TreeInteractions.select($scope.selectedNode.id, $scope);
                 recreateSplits([$scope.selectedNode]);
                 if (nodeToBeSplit) {
                     nodeToBeSplit = $scope.treeData[nodeToBeSplit.id];
@@ -695,7 +691,6 @@
                     d3.select("#node-" + nodeToBeMoved.id).select(".feature-children").remove();
                     delete $scope.splits[nodeToBeMoved.id];
                 }
-                TreeInteractions.select($scope.selectedNode.id, $scope);
             }, function(e) {
                 $scope.loadingTree = false;
                 $scope.createModal.error(e.data);
@@ -739,14 +734,11 @@
                 $scope.loadingTree = false;
                 $scope.isSaved = false;
 
-                $scope.treeData = response.data["nodes"];
-                $scope.selectedNode.children_ids =  $scope.treeData[$scope.selectedNode.id].children_ids;
+                $scope.treeData = response.data;
                 TreeInteractions.select($scope.selectedNode.id, $scope);
                 if ($scope.splits[$scope.selectedNode.id].length == 1) {
-                    $scope.selectedNode.isLeaf = true;
                     delete $scope.splits[$scope.selectedNode.id];
                     d3.select("#node-" + $scope.selectedNode.id).select(".feature-children").remove();
-                    delete $scope.selectedNode.featureChildren;
                 } else {
                     recreateSplits([$scope.selectedNode]);
                 }
@@ -764,12 +756,8 @@
                 $scope.loadingTree = false;
                 $scope.isSaved = false;
                 delete $scope.splits[$scope.selectedNode.id];
-                delete $scope.selectedNode.featureChildren;
-                $scope.selectedNode.children_ids = [];
-                $scope.selectedNode.isLeaf = true;
-                d3.select("#node-" + $scope.selectedNode.id).select(".feature-children").remove();
-
                 $scope.treeData = response.data;
+                d3.select("#node-" + $scope.selectedNode.id).select(".feature-children").remove();
                 TreeInteractions.select($scope.selectedNode.id, $scope);
             }, function(e) {
                 $scope.loadingTree = false;

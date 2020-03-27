@@ -1,7 +1,7 @@
 import dataiku
 from dataiku.customwebapp import get_webapp_config
 from flask import jsonify, request
-import traceback, json, logging
+import traceback, json
 from dku_idtb_decision_tree.tree import Tree
 from dku_idtb_decision_tree.tree_factory import TreeFactory
 from dku_idtb_decision_tree.node import Node
@@ -10,9 +10,6 @@ from dku_idtb_compatibility.utils import safe_str, safe_write_json
 
 from dataiku.core.dkujson import DKUJSONEncoder
 app.json_encoder = DKUJSONEncoder
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format="IDTB %(levelname)s - %(message)s")
 
 # initialization of the backend
 try:
@@ -76,7 +73,6 @@ def save():
     try:
         data = json.loads(request.data)
         safe_write_json(factory.get_tree(folder_name).jsonify(), folder, data["filename"])
-        logging.info("Tree has been successfully saved")
         return json.dumps({"status": "Tree saved"})
     except:
         logger.error(traceback.format_exc())
@@ -115,9 +111,7 @@ def set_label():
     node = factory.get_tree(folder_name).get_node(data["node_id"])
     node.label = data.get("label")
     if node.label is None:
-        logging.info("The label node has been deleted")
         return json.dumps({"status": "Node label deleted"})
-    logging.info("The label node has been set to" + node.label)
     return json.dumps({"status": "New node label set"})
 
 @app.route("/change-meaning", methods=["POST"])
@@ -134,8 +128,8 @@ def change_meaning():
 @app.route("/add-split", methods=["POST"])
 def add_split():
     try:
-        data = json.loads(request.data)
-        return jsonify(factory.get_tree(folder_name).add_split(**data))
+        tree, data = factory.get_tree(folder_name), json.loads(request.data)
+        return jsonify(tree.add_split(**data))
     except:
         logger.error(traceback.format_exc())
         return traceback.format_exc(), 500
@@ -143,8 +137,8 @@ def add_split():
 @app.route("/update-split", methods=["POST"])
 def update_split():
     try:
-        data = json.loads(request.data)
-        return jsonify(factory.get_tree(folder_name).update_split(**data))
+        tree, data = factory.get_tree(folder_name), json.loads(request.data)
+        return jsonify(tree.update_split(**data))
     except:
         logger.error(traceback.format_exc())
         return traceback.format_exc(), 500
@@ -152,10 +146,8 @@ def update_split():
 @app.route("/delete-split", methods=["DELETE"])
 def delete_split():
     try:
-        data = json.loads(request.data)
-        tree = factory.get_tree(folder_name)
-        tree.delete_split(**data)
-        return jsonify({"nodes": tree.jsonify_nodes()})
+        tree, data = factory.get_tree(folder_name), json.loads(request.data)
+        return jsonify(tree.delete_split(**data))
     except:
         logger.error(traceback.format_exc())
         return traceback.format_exc(), 500
@@ -163,8 +155,7 @@ def delete_split():
 @app.route("/delete-all-splits", methods=["DELETE"])
 def delete_all_splits():
     try:
-        data = json.loads(request.data)
-        tree = factory.get_tree(folder_name)
+        tree, data = factory.get_tree(folder_name), json.loads(request.data)
         tree.kill_children(tree.get_node(data["parent_id"]))
         tree.leaves.add(data["parent_id"])
         return jsonify(tree.jsonify_nodes())

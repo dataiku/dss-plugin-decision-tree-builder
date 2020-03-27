@@ -145,9 +145,12 @@ class Tree(object):
         parent_node = self.get_node(parent_id)
         if feature in parent_node.treated_as_numerical:
             if not parent_node.children_ids:
-                return self.add_numerical_split_no_siblings(parent_node, feature, value)
-            return self.add_numerical_split_if_siblings(parent_node, feature, value)
-        return self.add_categorical_split(parent_node, feature, value)
+                self.add_numerical_split_no_siblings(parent_node, feature, value)
+            else:
+                self.add_numerical_split_if_siblings(parent_node, feature, value)
+        else:
+            self.add_categorical_split(parent_node, feature, value)
+        return self.jsonify_nodes()
 
     def add_numerical_split_if_siblings(self, parent_node, feature, value):
         left, right = None, self.get_node(parent_node.children_ids[0])
@@ -282,10 +285,10 @@ class Tree(object):
             self.leaves.add(parent.id)
         else:
             if left.get_type() == Node.TYPES.NUM:
-                right.beginning = left.beginning
+                self.update_numerical_node(right, left.beginning, False)
             else:
-                right.update(removed=left.values)
-            self.set_node_info(right)
+                self.update_categorical_node(right, None, left.values)
+        return self.jsonify_nodes()
 
     def add_node(self, node, parent_node, idx=None):
         self.nodes[node.id] = node
