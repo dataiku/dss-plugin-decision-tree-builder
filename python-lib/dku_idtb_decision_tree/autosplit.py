@@ -56,6 +56,6 @@ def compute_splits(feature_df, target_col, max_num_splits):
                                             presort=True,
                                             random_state=1407)
 
-    tree_estimator.fit(feature_df, target_col.apply(safe_str))
+    tree_estimator.fit(feature_df, target_col)
     thresholds = tree_estimator.tree_.threshold[tree_estimator.tree_.children_left != _tree.TREE_LEAF]
     return sorted(thresholds)
