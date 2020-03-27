@@ -546,6 +546,10 @@ div[histogram] {
     display: flex;
 }
 
+.template:focus {
+    outline: none; /* for Chrome/Safari */
+}
+
 .tree {
     width: 100%;
     height: calc(100% - 40px);

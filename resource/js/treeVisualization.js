@@ -139,20 +139,21 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
     const zoomFit = function(vizMode) {
         const treePanel = d3.select(".tree").node().getBoundingClientRect(),
             svgDim = svg.node().getBBox();
-        const leftOffset = 10, topOffset = vizMode ? 40 : 20;
+        const leftOffset = 10;
         const scaleX = treePanel.width / (svgDim.width + leftOffset),
-            scaleY = treePanel.height / (svgDim.height + topOffset)
+            scaleY = treePanel.height / (svgDim.height + (vizMode ? 5 : 25))
         const scale = Math.min(scaleX, scaleY, maxZoom);
 
         let leftTranslate;
         if (scale == maxZoom) {
             leftTranslate = treePanel.width / 2;
         } else {
-            leftTranslate = Math.abs(svgDim.x)*scale + leftOffset;
+            leftTranslate = (Math.abs(svgDim.x) + leftOffset)*scale;
         }
 
-        zoomListener.translate([leftTranslate, topOffset]).scale(scale);
-        svg.transition().duration(400).attr("transform", "translate(" + leftTranslate + "," + topOffset +")scale(" + scale + ")");
+        const topTranslate = (vizMode ? 40 : 20) * scale;
+        zoomListener.translate([leftTranslate, topTranslate]).scale(scale);
+        svg.transition().duration(400).attr("transform", "translate(" + leftTranslate + "," + topTranslate +")scale(" + scale + ")");
     }
 
     const centerOnNode = function(selectedNode, unzoom) {

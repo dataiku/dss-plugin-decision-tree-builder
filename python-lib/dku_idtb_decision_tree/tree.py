@@ -34,7 +34,7 @@ class Tree(object):
                  features=None, new_sampling=False):
         try:
             df = df.dropna(subset=[target])
-            df[target] = df[target].apply(safe_str) # for classification
+            df.loc[:, target] = df.loc[:, target].apply(safe_str) # for classification
             self.df = df
         except KeyError:
             raise Exception("The target %s is not one of the columns of the dataset" % target)
@@ -100,7 +100,7 @@ class Tree(object):
                 stats["bins"] = []
                 for interval, count in col_distrib.items():
                     stats["bins"].append({"value": safe_str(interval),
-                                          "target_distrib": target_distrib[interval] if count > 0 else {},
+                                          "target_distrib": target_distrib[interval].to_dict() if count > 0 else {},
                                           "mid": interval.mid,
                                           "count": count})
             else:
@@ -117,7 +117,7 @@ class Tree(object):
             stats["same_target_distrib"] = True
             for value in col_distrib.index:
                 stats["bins"].append({"value": value,
-                                      "target_distrib": target_distrib[value],
+                                      "target_distrib": target_distrib[value].to_dict(),
                                       "count": col_distrib[value]})
                 if stats.get("same_target_distrib") and stats["bins"][0]["target_distrib"] != stats["bins"][-1]["target_distrib"]:
                     del stats["same_target_distrib"]
