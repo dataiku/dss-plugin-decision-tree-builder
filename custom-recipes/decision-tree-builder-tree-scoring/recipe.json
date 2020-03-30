@@ -42,11 +42,13 @@
 
     ],
 
+    "paramsPythonSetup": "py/compute_files_in_folder.py",
     "params": [
         {
             "name": "tree_file",
             "label" : "Decision tree",
-            "type": "STRING",
+            "type": "SELECT",
+            "getChoicesFromPython": true,
             "description": "Name of the JSON file, including the extension",
             "mandatory" : true
         },
