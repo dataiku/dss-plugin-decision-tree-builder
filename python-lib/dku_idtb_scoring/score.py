@@ -16,7 +16,7 @@ def score_chunk(tree, df, check_prediction):
             filtered_df["proba_" + safe_str(proba[0])] = proba[1]
         filtered_df["prediction"] = leaf.prediction
         if check_prediction and leaf.prediction is not None:
-            filtered_df["prediction_correct"] = filtered_df[tree.target] == leaf.prediction
+            filtered_df["prediction_correct"] = filtered_df[tree.target].apply(safe_str) == leaf.prediction
         filtered_df["label"] = leaf.label
         filtered_dfs.append(filtered_df)
     return filtered_dfs
