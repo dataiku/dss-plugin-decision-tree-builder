@@ -8,12 +8,12 @@
 
     "kind" : "PYTHON",
 
-    "selectableFromDataset": "input_dataset",
+    "selectableFromDataset": "inputDataset",
     "selectableFromFolder": "folder",
 
     "inputRoles" : [
         {
-            "name": "input_dataset",
+            "name": "inputDataset",
             "label": "Input Dataset",
             "arity": "UNARY",
             "required": true,
@@ -33,7 +33,7 @@
 
     "outputRoles" : [
         {
-            "name": "scored_dataset",
+            "name": "scoredDataset",
             "label": "Scored dataset",
             "arity": "UNARY",
             "required": true,
@@ -44,14 +44,21 @@
 
     "params": [
         {
-            "name": "tree_file",
+            "name": "treeFile",
             "label" : "Decision tree",
             "type": "STRING",
             "description": "Name of the JSON file, including the extension",
             "mandatory" : true
         },
         {
-            "name" : "chunk_size",
+            "name": "outputProbabilities",
+            "label" : "Output probabilities",
+            "type": "BOOLEAN",
+            "defaultValue" : true,
+            "description" : "output probabilities for each class in addition to the prediction"
+        },
+        {
+            "name" : "chunkSize",
             "label" : "Chunk size",
             "type": "INT",
             "description":"Size of each chunk when scoring the dataset",
