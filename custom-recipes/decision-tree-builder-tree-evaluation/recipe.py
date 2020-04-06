@@ -18,7 +18,7 @@ except ValueError:
 tree = ScoringTree(tree_dict["target"], tree_dict["target_values"], tree_dict["nodes"], tree_dict["features"])
 
 columns = recipe_config["inputColumns"] if recipe_config["keepSomeColumns"] else None
-scored_dataset.write_schema(get_scored_df_schema(tree, input_dataset, columns, recipe_config["outputProbabilities"], True, recipe_config["checkPrediction"]))
+scored_dataset.write_schema(get_scored_df_schema(tree, input_dataset.read_schema(), columns, recipe_config["outputProbabilities"], True, recipe_config["checkPrediction"]))
 input_dataframe = input_dataset.get_dataframe()
 input_dataframe.loc[:, tree.target] = input_dataframe.loc[:, tree.target].apply(safe_str)
 add_scoring_columns(tree, input_dataframe, True, True, recipe_config["checkPrediction"])

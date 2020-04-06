@@ -66,7 +66,7 @@ def create():
         df = dataiku.Dataset(data["name"]).get_dataframe(sampling=data.get("sample_method", "head"), limit=data.get("sample_size"))
         tree = InteractiveTree(df, **data)
         factory.set_tree(folder_name, tree)
-        return jsonify(tree.jsonify())
+        return jsonify(nodes=tree.jsonify_nodes(), target_values=tree.target_values, features=tree.features)
     except:
         logger.error(traceback.format_exc())
         return traceback.format_exc(), 500
@@ -91,7 +91,7 @@ def load():
         tree = InteractiveTree(df, name, jsonified_tree["target"], sample_method, sample_size,
                                 jsonified_tree["nodes"], jsonified_tree["last_index"], jsonified_tree["features"])
         factory.set_tree(folder_name, tree)
-        return jsonify(tree.jsonify())
+        return jsonify(nodes=tree.jsonify_nodes(), target_values=tree.target_values, features=tree.features)
     except:
         logger.error(traceback.format_exc())
         return traceback.format_exc(), 500

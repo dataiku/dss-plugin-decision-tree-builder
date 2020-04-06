@@ -1,5 +1,5 @@
 import pandas as pd
-from dku_idtb_decision_tree.tree import Tree
+from dku_idtb_decision_tree.tree import InteractiveTree
 
 df = pd.DataFrame([
                     [1, 5.5, "x", "n", "A"],
@@ -17,7 +17,7 @@ df = pd.DataFrame([
                 ], columns=("num_1", "num_2", "cat_1", "cat_2", "target"))
 
 def test_get_stats():
-    tree = Tree(df, None, "target")
+    tree = InteractiveTree(df, None, "target")
     stats_num_col = tree.get_stats(0, "num_1")
     assert stats_num_col["mean"] == 6
     assert stats_num_col["max"] == 11
@@ -36,7 +36,7 @@ def test_get_stats():
                                     {"value": "y", "count": 3, "target_distrib": {"A": 1, "B": 1, "C": 1}}]
     assert stats_cat_col.get("same_target_distrib") is None
 
-    tree = Tree(df.head(4), None, "target")
+    tree = InteractiveTree(df.head(4), None, "target")
     assert tree.get_stats(0, "cat_2")["same_target_distrib"]
 
 def check_node_info(node, samples, probabilities):
@@ -48,7 +48,7 @@ def check_node_info(node, samples, probabilities):
         assert node.prediction is None
 
 def test_on_categorical_splits():
-    tree = Tree(df, None, "target")
+    tree = InteractiveTree(df, None, "target")
     _test_add_categorical_nodes(tree)
     _test_update_categorical_nodes(tree)
     _test_delete_categorical_node(tree)
@@ -114,7 +114,7 @@ def _test_delete_categorical_node(tree):
     assert tree.get_node(2) is None and tree.get_node(3) is None
 
 def test_on_numerical_splits():
-    tree = Tree(df, None, "target")
+    tree = InteractiveTree(df, None, "target")
     _test_add_numerical_node(tree)
     _test_update_numerical_nodes(tree)
     _test_delete_numerical_node(tree)

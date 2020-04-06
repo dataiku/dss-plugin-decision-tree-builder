@@ -17,8 +17,7 @@ def update_input_schema(input_schema, columns):
             new_input_schema.append(column)
     return new_input_schema
 
-def get_scored_df_schema(tree, input_dataset, columns, output_probabilities, is_evaluation=False, check_prediction=False):
-    schema = input_dataset.read_schema()
+def get_scored_df_schema(tree, schema, columns, output_probabilities, is_evaluation=False, check_prediction=False):
     check_input_schema(tree, set(column["name"] for column in schema), is_evaluation)
     if columns is not None:
         schema = update_input_schema(schema, columns)
@@ -59,6 +58,7 @@ def add_scoring_columns(tree, df, output_probabilities, is_evaluation=False, che
         leaf = tree.get_node(leaf_id)
         if leaf.prediction is not None:
             filtered_df = tree.get_filtered_df(leaf, df)
+            label_indices = filtered_df.index
             if is_evaluation:
                 filtered_df = filtered_df[filtered_df[tree.target].isin(tree.target_values)]
             filtered_df_indices = filtered_df.index
@@ -74,7 +74,7 @@ def add_scoring_columns(tree, df, output_probabilities, is_evaluation=False, che
             df.loc[filtered_df_indices, "prediction"] = leaf.prediction
             if check_prediction:
                 df.loc[filtered_df_indices, "prediction_correct"] = filtered_df[tree.target] == leaf.prediction
-            df.loc[filtered_df_indices, "label"] = leaf.label
+            df.loc[label_indices, "label"] = leaf.label
 
         elif leaf.label is not None:
             filtered_df = tree.get_filtered_df(leaf, df)
