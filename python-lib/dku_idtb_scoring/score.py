@@ -69,7 +69,7 @@ def add_scoring_columns(tree, df, output_probabilities, is_evaluation=False, che
                     df.loc[filtered_df_indices, "proba_"+safe_str(target_class_name)] = proba
                     remaining_target_classes.remove(target_class_name)
                 for target_class_name in remaining_target_classes:
-                    df.loc[filtered_df_indices, "proba_"+safe_str(target_class_name)] = proba
+                    df.loc[filtered_df_indices, "proba_"+safe_str(target_class_name)] = 0
 
             df.loc[filtered_df_indices, "prediction"] = leaf.prediction
             if check_prediction:

@@ -86,11 +86,10 @@ def load():
     try:
         data = json.loads(request.data)
         jsonified_tree = folder.read_json(data["filename"])
-        df = dataiku.Dataset(jsonified_tree["name"]).get_dataframe(sampling=data.get("sample_method", "head"),
-                                                                limit=data.get("sample_size"))
-        jsonified_tree["sample_method"] = data.get("sample_method", "head")
-        jsonified_tree["sample_size"] = data.get("sample_size")
-        tree = InteractiveTree(df, **jsonified_tree)
+        name, sample_method, sample_size = jsonified_tree["name"], data.get("sample_method", "head"), data.get("sample_size")
+        df = dataiku.Dataset(name).get_dataframe(sampling=sample_method, limit=sample_size)
+        tree = InteractiveTree(df, name, jsonified_tree["target"], sample_method, sample_size,
+                                jsonified_tree["nodes"], jsonified_tree["last_index"], jsonified_tree["features"])
         factory.set_tree(folder_name, tree)
         return jsonify(tree.jsonify())
     except:

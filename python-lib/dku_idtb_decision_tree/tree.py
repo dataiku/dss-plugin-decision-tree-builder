@@ -103,17 +103,16 @@ class InteractiveTree(Tree):
 
     sample_size: positive integer, the number of rows for the sampling
     """
-    def __init__(self, df, name, target, target_values=None, sample_method='head', sample_size=None, nodes=None, last_index=1,
+    def __init__(self, df, name, target, sample_method='head', sample_size=None, nodes=None, last_index=1,
                  features=None):
         try:
             df = df.dropna(subset=[target])
             df.loc[:, target] = df.loc[:, target].apply(safe_str) # for classification
         except KeyError:
             raise Exception("The target %s is not one of the columns of the dataset" % target)
-        if target_values is None:
-            target_values = list(df[target].unique())
+        target_values = list(df[target].unique())
         if features is None:
-            features, numerical_feature_set = Tree.get_features_with_meanings(df, target)
+            features, numerical_feature_set = InteractiveTree.get_features_with_meanings(df, target)
         super(InteractiveTree, self).__init__(target, target_values, features)
         self.df = df
         self.name = name
@@ -376,7 +375,6 @@ class InteractiveTree(Tree):
         return {"name": self.name,
                 "last_index": self.last_index,
                 "target": self.target,
-                "target_values": self.target_values,
                 "features": self.features,
                 "nodes": self.jsonify_nodes(),
                 "sample_method": self.sample_method,
