@@ -197,18 +197,22 @@
             }
         });
 
+        const create = function(data) {
+            $scope.treeData = data.nodes;
+            $scope.features = data.features;
+            targetValues = data.target_values;
+            $scope.splits = {};
+            setScale("Pastel");
+            TreeInteractions.createTree($scope);
+            $scope.loadingTree = false;
+        }
+
         $scope.create = function(name, target, size, method) {
             $scope.loadingTree = true;
             $http.post(getWebAppBackendUrl("create"),
                 {"name": name, "target": target, "sample_size": size, "sample_method": method})
             .then(function(response) {
-                $scope.loadingTree = false;
-                $scope.treeData = response.data.nodes;
-                $scope.features = response.data.features;
-                targetValues = response.data.target_values;
-                setScale("Pastel");
-                TreeInteractions.createTree($scope);
-                $scope.splits = {};
+                create(response.data);
             }, function(e) {
                 $scope.loadingTree = false;
                 $scope.createModal.error(e.data);
@@ -221,14 +225,8 @@
             $http.post(getWebAppBackendUrl("load"), {"filename": filename, "sample_size": size, "sample_method": method})
             .then(function(response) {
                 $scope.config.file = $scope.config.file.split(".json")[0].substring(1);
-                $scope.features = response.data.features;
-                $scope.treeData = response.data.nodes;
-                $scope.splits = {};
+                create(response.data);
                 recreateSplits(Object.values(response.data.nodes));
-                $scope.loadingTree = false;
-                targetValues = response.data.target_values;
-                setScale("Pastel");
-                TreeInteractions.createTree($scope);
             }, function(e) {
                 $scope.loadingTree = false;
                 $scope.createModal.error(e.data);

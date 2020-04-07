@@ -904,11 +904,11 @@ path.selected, path.hovered {
     background: var(--white);
 }
 
-[tooltip] {
+[tooltip='tree'] {
     visibility: hidden;
 }
 
-[tooltip].selected, [tooltip].hovered {
+[tooltip='tree'].selected, [tooltip='tree'].hovered {
     visibility: visible;
 }
 

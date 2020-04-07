@@ -8,12 +8,12 @@
 
     "kind" : "PYTHON",
 
-    "selectableFromDataset": "input_dataset",
+    "selectableFromDataset": "inputDataset",
     "selectableFromFolder": "folder",
 
     "inputRoles" : [
         {
-            "name": "input_dataset",
+            "name": "inputDataset",
             "label": "Input dataset",
             "arity": "UNARY",
             "required": true,
@@ -33,14 +33,14 @@
 
     "outputRoles" : [
         {
-            "name": "scored_dataset",
+            "name": "scoredDataset",
             "label": "Scored dataset",
             "arity": "UNARY",
             "required": true,
             "acceptsDataset": true
         },
         {
-            "name": "metrics_dataset",
+            "name": "metricsDataset",
             "label": "Metrics dataset",
             "arity": "UNARY",
             "required": true,
@@ -52,7 +52,7 @@
     "paramsPythonSetup": "py/compute_files_in_folder.py",
     "params": [
         {
-            "name": "tree_file",
+            "name": "treeFile",
             "label" : "Decision tree",
             "type": "SELECT",
             "getChoicesFromPython": true,
@@ -60,30 +60,44 @@
             "mandatory" : true
         },
         {
-            "name" : "chunk_size",
-            "label" : "Chunk size",
-            "type": "INT",
-            "description":"Size of each chunk when scoring the dataset",
-            "mandatory" : false,
-            "defaultValue": 10000
+            "label": "Additional columns",
+            "type": "SEPARATOR"
         },
         {
-            "name": "probabilities",
+            "name": "outputProbabilities",
             "label" : "Output probabilities",
             "type": "BOOLEAN",
             "defaultValue" : true,
-            "description" : "output probabilities for each class in addition to the prediction "
+            "description" : "output probabilities for each class in addition to the prediction"
+        },
+        {
+            "name": "checkPrediction",
+            "label" : "Check if prediction is correct",
+            "defaultValue" : true,
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "keepSomeColumns",
+            "label" : "Input columns to include",
+            "type": "BOOLEAN",
+            "description" : "avoid copying the whole input dataset to the output "
+        },
+        {
+            "name": "inputColumns",
+            "label": "Columns to keep",
+            "type": "COLUMNS",
+            "visibilityCondition" : "model.keepSomeColumns",
+            "columnRole": "inputDataset"
+        },
+        {
+            "label": "Computed metrics",
+            "type": "SEPARATOR"
         },
         {
             "name": "filterMetrics",
             "label" : "Filter metrics",
             "type": "BOOLEAN",
-            "description" : "select a subset of available metrics to evaluate"
-        },
-        {
-            "label": "Available metrics",
-            "type": "SEPARATOR",
-            "visibilityCondition" : "model.filterMetrics"
+            "description" : "select only a subset of available metrics to evaluate"
         },
         {
             "name": "auc",

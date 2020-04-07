@@ -2,7 +2,7 @@ import dataiku
 from dataiku.customwebapp import get_webapp_config
 from flask import jsonify, request
 import traceback, json, logging
-from dku_idtb_decision_tree.tree import Tree
+from dku_idtb_decision_tree.tree import InteractiveTree
 from dku_idtb_decision_tree.tree_factory import TreeFactory
 from dku_idtb_decision_tree.node import Node
 from dku_idtb_decision_tree.autosplit import autosplit
@@ -64,9 +64,9 @@ def create():
     try:
         data = json.loads(request.data)
         df = dataiku.Dataset(data["name"]).get_dataframe(sampling=data.get("sample_method", "head"), limit=data.get("sample_size"))
-        tree = Tree(df, **data)
+        tree = InteractiveTree(df, **data)
         factory.set_tree(folder_name, tree)
-        return jsonify(tree.jsonify())
+        return jsonify(nodes=tree.jsonify_nodes(), target_values=tree.target_values, features=tree.features)
     except:
         logger.error(traceback.format_exc())
         return traceback.format_exc(), 500
@@ -86,16 +86,12 @@ def load():
     try:
         data = json.loads(request.data)
         jsonified_tree = folder.read_json(data["filename"])
-        new_sampling = data.get("sample_method") == "random" \
-            or data.get("sample_method") != jsonified_tree.get("sample_method") \
-            or data.get("sample_size") != jsonified_tree.get("sample_size")
-        df = dataiku.Dataset(jsonified_tree["name"]).get_dataframe(sampling=data.get("sample_method", "head"),
-                                                                limit=data.get("sample_size"))
-        jsonified_tree["sample_method"] = data.get("sample_method", "head")
-        jsonified_tree["sample_size"] = data.get("sample_size")
-        tree = Tree(df, new_sampling=new_sampling, **jsonified_tree)
+        name, sample_method, sample_size = jsonified_tree["name"], data.get("sample_method", "head"), data.get("sample_size")
+        df = dataiku.Dataset(name).get_dataframe(sampling=sample_method, limit=sample_size)
+        tree = InteractiveTree(df, name, jsonified_tree["target"], sample_method, sample_size,
+                                jsonified_tree["nodes"], jsonified_tree["last_index"], jsonified_tree["features"])
         factory.set_tree(folder_name, tree)
-        return jsonify(tree.jsonify())
+        return jsonify(nodes=tree.jsonify_nodes(), target_values=tree.target_values, features=tree.features)
     except:
         logger.error(traceback.format_exc())
         return traceback.format_exc(), 500

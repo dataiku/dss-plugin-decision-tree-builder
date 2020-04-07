@@ -8,12 +8,12 @@
 
     "kind" : "PYTHON",
 
-    "selectableFromDataset": "input_dataset",
+    "selectableFromDataset": "inputDataset",
     "selectableFromFolder": "folder",
 
     "inputRoles" : [
         {
-            "name": "input_dataset",
+            "name": "inputDataset",
             "label": "Input Dataset",
             "arity": "UNARY",
             "required": true,
@@ -33,7 +33,7 @@
 
     "outputRoles" : [
         {
-            "name": "scored_dataset",
+            "name": "scoredDataset",
             "label": "Scored dataset",
             "arity": "UNARY",
             "required": true,
@@ -45,7 +45,7 @@
     "paramsPythonSetup": "py/compute_files_in_folder.py",
     "params": [
         {
-            "name": "tree_file",
+            "name": "treeFile",
             "label" : "Decision tree",
             "type": "SELECT",
             "getChoicesFromPython": true,
@@ -53,12 +53,36 @@
             "mandatory" : true
         },
         {
-            "name" : "chunk_size",
-            "label" : "Chunk size",
+            "name" : "chunkSize",
+            "label" : "Batch size",
             "type": "INT",
-            "description":"Size of each chunk when scoring the dataset",
+            "description":"Size of each batch when scoring the dataset",
             "mandatory" : false,
             "defaultValue": 10000
+        },
+        {
+            "label": "Additional columns",
+            "type": "SEPARATOR"
+        },
+        {
+            "name": "outputProbabilities",
+            "label" : "Output probabilities",
+            "type": "BOOLEAN",
+            "defaultValue" : true,
+            "description" : "output probabilities for each class in addition to the prediction"
+        },
+        {
+            "name": "keepSomeColumns",
+            "label" : "Input columns to include",
+            "type": "BOOLEAN",
+            "description" : "avoid copying the whole input dataset to the output "
+        },
+        {
+            "name": "inputColumns",
+            "label": "Columns to keep",
+            "type": "COLUMNS",
+            "visibilityCondition" : "model.keepSomeColumns",
+            "columnRole": "inputDataset"
         }
     ],
 

@@ -45,11 +45,9 @@ class Node(object):
     def get_type(self):
         raise NotImplementedError
 
-    def rebuild(self, children_ids, prediction, samples, probabilities, label=None):
-        self.children_ids += children_ids
+    def rebuild(self, prediction, samples, probabilities):
         self.prediction = prediction
         self.samples = samples
-        self.label = label
         self.probabilities = probabilities
 
     def jsonify(self):
