@@ -51,6 +51,18 @@
             "mandatory" : true
         },
         {
+            "name" : "chunkSize",
+            "label" : "Batch size",
+            "type": "INT",
+            "description":"Size of each batch when scoring the dataset",
+            "mandatory" : false,
+            "defaultValue": 10000
+        },
+        {
+            "label": "Additional columns",
+            "type": "SEPARATOR"
+        },
+        {
             "name": "outputProbabilities",
             "label" : "Output probabilities",
             "type": "BOOLEAN",
@@ -58,12 +70,17 @@
             "description" : "output probabilities for each class in addition to the prediction"
         },
         {
-            "name" : "chunkSize",
-            "label" : "Chunk size",
-            "type": "INT",
-            "description":"Size of each chunk when scoring the dataset",
-            "mandatory" : false,
-            "defaultValue": 10000
+            "name": "keepSomeColumns",
+            "label" : "Input columns to include",
+            "type": "BOOLEAN",
+            "description" : "avoid copying the whole input dataset to the output "
+        },
+        {
+            "name": "inputColumns",
+            "label": "Columns to keep",
+            "type": "COLUMNS",
+            "visibilityCondition" : "model.keepSomeColumns",
+            "columnRole": "inputDataset"
         }
     ],
 
