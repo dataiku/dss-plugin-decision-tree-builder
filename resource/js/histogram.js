@@ -105,7 +105,6 @@ app.directive("histogram", function (Format, $compile) {
                 groups.on("mouseenter", function(d, i) {
                     histSvg.append("g")
                     .attr("tooltip", "histogram")
-                    .classed("selected", true)
                     .attr("feature", $scope.selectedNode.featureChildren)
                     .attr("bin-index", i)
                     .call(function() {
@@ -118,7 +117,7 @@ app.directive("histogram", function (Format, $compile) {
                     let xPosition = d3.mouse(this)[0] + 20;
                     let yPosition = d3.mouse(this)[1];
                     const histogramDim = d3.select(".histogram-svg").node().getBoundingClientRect();
-                    const tooltipDim = {width: 190, height: 45 + Math.min(d.length, 5) * 22};
+                    const tooltipDim = d3.select("[tooltip]").node().getBoundingClientRect();
                     if (xPosition + 25 + tooltipDim.width > histogramDim.width) {
                         xPosition -= 30 + tooltipDim.width;
                     }

@@ -145,28 +145,29 @@ class InteractiveTree(Tree):
         filtered_df = self.get_filtered_df(node, self.df)
         column = filtered_df[col]
         target_column = filtered_df[self.target]
-        stats = {}
         if col in node.treated_as_numerical:
-            if not column.empty:
-                stats.update({"mean": column.mean(), "max": column.max(), "min": column.min()})
-                target_grouped = target_column.groupby(pd.cut(column.fillna(self.features[col]["mean"]),
-                                                              bins = min(10, column.nunique()),
-                                                              include_lowest = True,
-                                                              right = False))
-                target_distrib = target_grouped.apply(lambda x: x.value_counts())
-                col_distrib = target_grouped.count()
-                stats["bins"] = []
-                for interval, count in col_distrib.items():
-                    stats["bins"].append({"value": safe_str(interval),
-                                          "target_distrib": target_distrib[interval].to_dict() if count > 0 else {},
-                                          "mid": interval.mid,
-                                          "count": count})
-            else:
-                stats["no_values"] = True
-            return stats
+            return self.get_stats_numerical_node(column, target_column, self.features[col]["mean"])
+        return self.get_stats_categorical_node(column, target_column, self.df[col].dropna().apply(safe_str))
 
-        stats["bins"] = []
-        empty_values = set(self.df[col].dropna().apply(safe_str).unique())
+    def get_stats_numerical_node(self, column, target_column, mean):
+        if column.empty:
+            return {"no_values": True}
+
+        stats = {"bins": [], "mean": column.mean(), "max": column.max(), "min": column.min()}
+        bins = pd.cut(column.fillna(mean), bins = min(10, column.nunique()), include_lowest = True, right = False)
+        target_grouped = target_column.groupby(bins)
+        target_distrib = target_grouped.apply(lambda x: x.value_counts())
+        col_distrib = target_grouped.count()
+        for interval, count in col_distrib.items():
+            stats["bins"].append({"value": safe_str(interval),
+                                    "target_distrib": target_distrib[interval].to_dict() if count > 0 else {},
+                                    "mid": interval.mid,
+                                    "count": count})
+        return stats
+
+    def get_stats_categorical_node(self, column, target_column, unfiltered_col):
+        stats = {"bins": []}
+        empty_values = set(unfiltered_col.unique())
         if not column.empty:
             target_grouped = target_column.groupby(column.fillna("No values").apply(safe_str))
             target_distrib = target_grouped.value_counts(dropna=False)
@@ -407,4 +408,6 @@ class InteractiveTree(Tree):
                     numerical_feature_set.add(col_name)
                 else:
                     feature_dict[col_name].pop("mean", None)
+                    if col.dtype == "bool":
+                        df.loc[:, col_name] = df.loc[:, col_name].apply(safe_str)
         return feature_dict, numerical_feature_set
