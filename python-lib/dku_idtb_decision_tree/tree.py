@@ -382,6 +382,7 @@ class InteractiveTree(Tree):
         return {"name": self.name,
                 "last_index": self.last_index,
                 "target": self.target,
+                "target_values": self.target_values,
                 "features": self.features,
                 "nodes": self.jsonify_nodes(),
                 "sample_method": self.sample_method,
