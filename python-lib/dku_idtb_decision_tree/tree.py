@@ -5,6 +5,86 @@ import pandas as pd
 
 
 class Tree(object):
+    def __init__(self, target, target_values, features):
+        self.target = target
+        self.target_values = target_values
+        self.features = features
+        self.nodes = {}
+        self.leaves = set()
+
+    def get_node(self, i):
+        return self.nodes.get(i)
+
+    def add_node(self, node):
+        self.nodes[node.id] = node
+        self.leaves.add(node.id)
+        self.leaves.discard(node.parent_id)
+
+    def get_filtered_df(self, node, df):
+        node_id = node.id
+        while node_id > 0:
+            node = self.get_node(node_id)
+            if node.get_type() == Node.TYPES.NUM:
+                df = node.apply_filter(df, self.features[node.feature]["mean"])
+            else:
+                df = node.apply_filter(df)
+            node_id = node.parent_id
+        return df
+
+    def parse_nodes(self, nodes, rebuild_nodes=False, numerical_features=None):
+        self.nodes, ids = {}, deque()
+        root_node_dict = nodes["0"]
+        treated_as_numerical = set(root_node_dict["treated_as_numerical"])
+        if numerical_features is not None:
+            treated_as_numerical.intersection_update(numerical_features)
+        root_node = Node(0, -1, treated_as_numerical)
+        root_node.label = root_node_dict["label"]
+        self.add_node(root_node)
+
+        ids += root_node_dict["children_ids"]
+
+        while ids:
+            dict_node = nodes[safe_str(ids.popleft())]
+            treated_as_numerical = set(dict_node["treated_as_numerical"])
+            feature = dict_node["feature"]
+            if numerical_features is not None:
+                treated_as_numerical.intersection_update(numerical_features)
+            if dict_node.get("values") is not None:
+                node = CategoricalNode(dict_node["id"],
+                                       dict_node["parent_id"],
+                                       treated_as_numerical,
+                                       feature,
+                                       dict_node["values"],
+                                       others=dict_node["others"])
+            else:
+                node = NumericalNode(dict_node["id"],
+                                    dict_node["parent_id"],
+                                    treated_as_numerical,
+                                    feature,
+                                    beginning=dict_node.get("beginning", None),
+                                    end=dict_node.get("end", None))
+            node.label = dict_node["label"]
+            self.add_node(node)
+            if rebuild_nodes:
+                node.rebuild(dict_node["prediction"],
+                            dict_node["samples"],
+                            dict_node["probabilities"])
+            ids += dict_node["children_ids"]
+
+# Used by the recipes
+class ScoringTree(Tree):
+    def __init__(self, target, target_values, nodes, features):
+        super(ScoringTree, self).__init__(target, target_values, features)
+        self.parse_nodes(nodes, rebuild_nodes=True)
+
+    def add_node(self, node):
+        parent_node = self.get_node(node.parent_id)
+        if parent_node is not None:
+            parent_node.children_ids.append(node.id)
+        super(ScoringTree, self).add_node(node)
+
+#Used by the webapp
+class InteractiveTree(Tree):
     """
     A decision tree
 
@@ -30,38 +110,27 @@ class Tree(object):
 
     sample_size: positive integer, the number of rows for the sampling
     """
-    def __init__(self, df, name, target, target_values=None, sample_method='head', sample_size=None, nodes=None, last_index=1,
-                 features=None, new_sampling=False):
+    def __init__(self, df, name, target, sample_method='head', sample_size=None, nodes=None, last_index=1,
+                 features=None):
         try:
             df = df.dropna(subset=[target])
             df.loc[:, target] = df.loc[:, target].apply(safe_str) # for classification
-            self.df = df
         except KeyError:
             raise Exception("The target %s is not one of the columns of the dataset" % target)
+        target_values = list(df[target].unique())
+        features, numerical_feature_set = InteractiveTree.get_features_with_meanings(df, target, features)
+        super(InteractiveTree, self).__init__(target, target_values, features)
+        self.df = df
         self.name = name
         self.last_index = last_index
-        self.target = target
-        if target_values is None:
-            self.target_values = list(self.df[target].unique())
-        else:
-            self.target_values = target_values
         self.sample_method = sample_method
         self.sample_size = sample_size
-        self.leaves = set()
         if nodes is None:
-            self.nodes = {}
             root = Node(0, -1, set())
-            self.add_node(root, None)
+            root.treated_as_numerical = numerical_feature_set
+            self.add_node(root)
         else:
-            self.parse_nodes(nodes)
-        if features is None:
-            self.features = {}
-            self.get_features_with_meanings(df)
-        else:
-            self.features = features
-        if new_sampling:
-            for node in self.nodes.values():
-                self.set_node_info(node)
+            self.parse_nodes(nodes, numerical_features=numerical_feature_set)
 
     def change_meaning(self, i, feature):
         node = self.get_node(i)
@@ -70,17 +139,6 @@ class Tree(object):
         else:
             node.treated_as_numerical.add(feature)
         return self.get_stats(i, feature)
-
-    def get_filtered_df(self, node, df):
-        node_id = node.id
-        while node_id > 0:
-            node = self.get_node(node_id)
-            if node.get_type() == Node.TYPES.NUM:
-                df = node.apply_filter(df, self.features[node.feature]["mean"])
-            else:
-                df = node.apply_filter(df)
-            node_id = node.parent_id
-        return df
 
     def get_stats(self, i, col):
         node = self.get_node(i)
@@ -165,7 +223,7 @@ class Tree(object):
         if right is None:
             new_node = NumericalNode(self.last_index, parent_node.id, set(parent_node.treated_as_numerical), feature, beginning=value)
             self.last_index += 1
-            self.add_node(new_node, parent_node)
+            self.add_node(new_node)
             self.update_numerical_node(left, value, True)
             return {"left": left.jsonify(), "right": new_node.jsonify(), "parent": parent_node.jsonify()}
 
@@ -175,18 +233,17 @@ class Tree(object):
             self.kill_children(right)
             new_node.beginning = left.end
         self.update_numerical_node(right, value, False)
-        self.add_node(new_node, parent_node, right_idx)
+        self.add_node(new_node, right_idx)
         return {"left": new_node.jsonify(), "right": right.jsonify(), "parent": parent_node.jsonify()}
 
     def add_numerical_split_no_siblings(self, parent_node, feature, value):
-        self.leaves.remove(parent_node.id)
         self.features[feature]["nr_uses"] += 1
         new_node_left = NumericalNode(self.last_index, parent_node.id, set(parent_node.treated_as_numerical), feature, end=value)
         self.last_index += 1
         new_node_right = NumericalNode(self.last_index, parent_node.id, set(parent_node.treated_as_numerical), feature, beginning=value)
         self.last_index += 1
-        self.add_node(new_node_left, parent_node)
-        self.add_node(new_node_right, parent_node)
+        self.add_node(new_node_left)
+        self.add_node(new_node_right)
         return {"left": new_node_left.jsonify(), "right": new_node_right.jsonify(), "parent": parent_node.jsonify()}
 
     def add_categorical_split(self, parent_node, feature, values):
@@ -195,14 +252,13 @@ class Tree(object):
         if not parent_node.children_ids:
             self.features[feature]["nr_uses"] += 1
             right = CategoricalNode(self.last_index, parent_node.id, set(parent_node.treated_as_numerical), feature, list(values), others=True)
-            self.leaves.remove(parent_node.id)
             self.last_index += 1
         else:
             right = self.get_node(parent_node.children_ids.pop())
             self.update_categorical_node(right, values, None)
 
-        self.add_node(left, parent_node)
-        self.add_node(right, parent_node)
+        self.add_node(left)
+        self.add_node(right)
         return {"left": left.jsonify(), "right": right.jsonify(), "parent": parent_node.jsonify()}
 
     def update_split(self, feature, left_id, right_id, value):
@@ -290,18 +346,15 @@ class Tree(object):
                 self.update_categorical_node(right, None, left.values)
         return self.jsonify_nodes()
 
-    def add_node(self, node, parent_node, idx=None):
-        self.nodes[node.id] = node
-        self.leaves.add(node.id)
-        self.set_node_info(node)
+    def add_node(self, node, idx=None):
+        super(InteractiveTree, self).add_node(node)
+        parent_node = self.get_node(node.parent_id)
         if parent_node is not None:
             if idx is None:
                 parent_node.children_ids.append(node.id)
             else:
                 parent_node.children_ids.insert(idx, node.id)
-
-    def get_node(self, i):
-        return self.nodes.get(i)
+        self.set_node_info(node)
 
     def delete_node(self, node, parent_node):
         self.kill_children(node)
@@ -324,45 +377,10 @@ class Tree(object):
                 self.leaves.remove(index)
             del self.nodes[index]
 
-    def parse_nodes(self, nodes):
-        self.nodes, ids = {}, deque()
-        node = Node(0, -1, set(nodes["0"]["treated_as_numerical"]))
-        node.rebuild(nodes["0"]["children_ids"],
-                     nodes["0"]["prediction"], nodes["0"]["samples"],
-                     nodes["0"]["probabilities"],
-                     nodes["0"]["label"])
-        self.nodes[0] = node
-
-        ids += node.children_ids
-        if not ids:
-            self.leaves.add(node.id)
-        while ids:
-            dict_node = nodes[safe_str(ids.popleft())]
-            if dict_node.get("values") is not None:
-                node = CategoricalNode(dict_node.pop("id"),
-                                       dict_node.pop("parent_id"),
-                                       set(dict_node.pop("treated_as_numerical")),
-                                       dict_node.pop("feature"),
-                                       dict_node.pop("values"),
-                                       others=dict_node.pop("others"))
-            else:
-                node = NumericalNode(dict_node.pop("id"),
-                                     dict_node.pop("parent_id"),
-                                     set(dict_node.pop("treated_as_numerical")),
-                                     dict_node.pop("feature"),
-                                     beginning=dict_node.pop("beginning", None),
-                                     end=dict_node.pop("end", None))
-            node.rebuild(**dict_node)
-            if not node.children_ids:
-                self.leaves.add(node.id)
-            self.nodes[node.id] = node
-            ids += node.children_ids
-
     def jsonify(self):
         return {"name": self.name,
                 "last_index": self.last_index,
                 "target": self.target,
-                "target_values": self.target_values,
                 "features": self.features,
                 "nodes": self.jsonify_nodes(),
                 "sample_method": self.sample_method,
@@ -374,13 +392,19 @@ class Tree(object):
             jsonified_tree[key] = node.jsonify()
         return jsonified_tree
 
-
-    def get_features_with_meanings(self, df):
+    @staticmethod
+    def get_features_with_meanings(df, target, feature_dict):
+        if feature_dict is None:
+            feature_dict = {}
+        numerical_feature_set = set()
         for col_name in df.columns:
-            if col_name != self.target:
-                self.features[col_name] = {"nr_uses": 0}
+            if col_name != target:
+                if col_name not in feature_dict:
+                    feature_dict[col_name] = {"nr_uses": 0}
                 col = df.loc[:, col_name]
-                if pd.api.types.is_numeric_dtype(col):
-                    if col.nunique() > 10:
-                        self.features[col_name]["mean"] = col.mean()
-                        self.get_node(0).treated_as_numerical.add(col_name)
+                if pd.api.types.is_numeric_dtype(col) and col.nunique() > 10:
+                    feature_dict[col_name]["mean"] = col.mean()
+                    numerical_feature_set.add(col_name)
+                else:
+                    feature_dict[col_name].pop("mean", None)
+        return feature_dict, numerical_feature_set
