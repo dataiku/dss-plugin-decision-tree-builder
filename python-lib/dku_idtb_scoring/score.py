@@ -1,5 +1,6 @@
 import pandas as pd
 from dku_idtb_compatibility.utils import safe_str
+from datetime import datetime
 
 def check_input_schema(tree, col_set, check_prediction):
     for col_name, col_usage in tree.features.items():
@@ -39,7 +40,7 @@ def get_scored_df_schema(tree, schema, columns, output_probabilities, is_evaluat
     return schema
 
 def get_metric_df_schema(metrics_dict, metrics, recipe_config):
-    schema_metrics = []
+    schema_metrics = [{"type": "string", "name": "date"}]
     for metric in metrics:
         if metric == "mcalibrationLoss":
             metric_name_in_config = "calibrationLoss"
@@ -51,6 +52,7 @@ def get_metric_df_schema(metrics_dict, metrics, recipe_config):
             metrics_dict.pop(metric, "None")
         else:
             schema_metrics.append({"type": "float", "name": metric})
+    metrics_dict["date"] = datetime.now()
     return schema_metrics
 
 def add_scoring_columns(tree, df, output_probabilities, is_evaluation=False, check_prediction=False):
