@@ -16,8 +16,8 @@ except ValueError:
     raise Exception("No tree file named " + recipe_config["treeFile"])
 
 tree = ScoringTree(tree_dict["target"], tree_dict["target_values"], tree_dict["nodes"], tree_dict["features"])
-
 columns = recipe_config["inputColumns"] if recipe_config["keepSomeColumns"] else None
+
 scored_dataset.write_schema(get_scored_df_schema(tree, input_dataset.read_schema(), columns, recipe_config["outputProbabilities"], True, recipe_config["checkPrediction"]))
 input_dataframe = input_dataset.get_dataframe()
 input_dataframe.loc[:, tree.target] = input_dataframe.loc[:, tree.target].apply(safe_str)
@@ -44,10 +44,10 @@ y_actual = input_dataframe[tree.target].map(lambda t: int(target_mapping[safe_st
 
 if len(tree.target_values) == 2:
     metrics_dict = compute_binary_classification_metrics({"metrics": {"evaluationMetric": None, "liftPoint": 0.4}}, y_actual, y_pred, probas_df.values)
-    metrics = ["precision", "recall", "accuracy", "auc",  "hammingLoss", "logLoss", "calibrationLoss"]
+    metrics = ["precision", "recall", "f1", "accuracy", "auc",  "hammingLoss", "logLoss", "calibrationLoss"]
 else:
     metrics_dict = compute_multiclass_metrics({"metrics": {"evaluationMetric": None, "liftPoint": 0.4}}, y_actual, y_pred, probas_df.values)
-    metrics = ["precision", "recall", "accuracy", "mrocAUC", "logLoss", "hammingLoss", "mcalibrationLoss"]
+    metrics = ["precision", "recall", "f1", "accuracy", "mrocAUC", "logLoss", "hammingLoss", "mcalibrationLoss"]
 
 metrics_dataset.write_schema(get_metric_df_schema(metrics_dict, metrics, recipe_config))
 with metrics_dataset.get_writer() as writer:

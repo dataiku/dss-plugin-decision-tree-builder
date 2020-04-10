@@ -128,6 +128,13 @@
             "visibilityCondition" : "model.filterMetrics"
         },
         {
+            "name": "f1",
+            "label" : "f1",
+            "type": "BOOLEAN",
+            "defaultValue" : true,
+            "visibilityCondition" : "model.filterMetrics"
+        },
+        {
             "name": "logLoss",
             "label" : "log loss",
             "type": "BOOLEAN",
