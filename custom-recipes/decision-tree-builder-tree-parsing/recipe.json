@@ -1,0 +1,53 @@
+{
+    "meta": {
+        "label": "Parse a visual decision tree",
+        "description": "From a decision tree trained with DSS Visual ML, generate a json structure file.",
+        "icon": " icon-share-alt",
+        "iconColor" : "sky"
+    },
+
+    "selectableFromDataset": "input",
+    "kind": "PYTHON",
+    "paramsPythonSetup": "py/compute_model_id_choice.py",
+    "inputRoles" : [
+        {
+            "name": "model",
+            "label": "Tree model",
+            "arity": "UNARY",
+            "required": true,
+            "acceptsDataset": false,
+            "acceptsSavedModel": true
+        }
+    ],
+
+    "outputRoles" : [
+        {
+            "name": "main_output",
+            "label": "Folder",
+            "description": "Folder contains the decision tree",
+            "arity": "UNARY",
+            "required": true,
+            "acceptsDataset": false,
+            "acceptsManagedFolder": true
+        }
+    ],
+
+    "params": [
+        {
+            "name": "version_id",
+            "label": "Model version",
+            "type": "SELECT",
+            "getChoicesFromPython": true
+        },
+        {
+          "type": "STRING",
+          "name": "file_name",
+          "label": "Filename",
+          "defaultValue": "my_little_tree",
+          "description": "Choose a name for the json file"
+        }
+    ],
+
+    "resourceKeys": []
+
+}
