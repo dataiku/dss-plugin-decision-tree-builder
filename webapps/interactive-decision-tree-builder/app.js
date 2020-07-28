@@ -2,6 +2,7 @@
     'use strict';
 
     app.controller("IdtbController", function($scope, ModalService) {
+        dataiku.checkWebAppParameters();
         $scope.template = "create";
         $scope.setTemplate = function(newTemplate) {
             $scope.template = newTemplate;
