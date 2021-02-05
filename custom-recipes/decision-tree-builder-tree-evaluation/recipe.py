@@ -2,7 +2,7 @@ from dataiku.customrecipe import get_input_names_for_role, get_output_names_for_
 from dku_idtb_decision_tree.tree import ScoringTree
 from dku_idtb_scoring.score import add_scoring_columns, get_scored_df_schema, get_metric_df_schema
 from dku_idtb_compatibility.utils import safe_str
-from dataiku.doctor.prediction.reg_evaluation_recipe import compute_multiclass_metrics, compute_binary_classification_metrics
+from dataiku.doctor.prediction.evaluation_base import compute_multiclass_metrics, compute_binary_classification_metrics
 
 input_dataset = dataiku.Dataset(get_input_names_for_role("inputDataset")[0])
 folder = dataiku.Folder(get_input_names_for_role("folder")[0])
