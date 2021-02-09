@@ -42,11 +42,19 @@ target_mapping = {safe_str(label): index for index, label in enumerate(tree.targ
 y_pred = input_dataframe["prediction"].map(lambda t: int(target_mapping[safe_str(t)]))
 y_actual = input_dataframe[tree.target].map(lambda t: int(target_mapping[safe_str(t)]))
 
+metrics = {"metrics":
+    {
+        "evaluationMetric": None,
+        "liftPoint": 0.4,
+        "costMatrixWeights": {"tpGain": 1, "fpGain": -0.3, "tnGain": 0, "fnGain": 0}
+    }
+}
+
 if len(tree.target_values) == 2:
-    metrics_dict = compute_binary_classification_metrics({"metrics": {"evaluationMetric": None, "liftPoint": 0.4}}, y_actual, y_pred, probas_df.values)
+    metrics_dict = compute_binary_classification_metrics(metrics, y_actual, y_pred, probas_df.values)
     metrics = ["precision", "recall", "f1", "accuracy", "auc",  "hammingLoss", "logLoss", "calibrationLoss"]
 else:
-    metrics_dict = compute_multiclass_metrics({"metrics": {"evaluationMetric": None, "liftPoint": 0.4}}, y_actual, y_pred, probas_df.values)
+    metrics_dict = compute_multiclass_metrics(metrics, y_actual, y_pred, probas_df.values)
     metrics = ["precision", "recall", "f1", "accuracy", "mrocAUC", "logLoss", "hammingLoss", "mcalibrationLoss"]
 
 metrics_dataset.write_schema(get_metric_df_schema(metrics_dict, metrics, recipe_config))
