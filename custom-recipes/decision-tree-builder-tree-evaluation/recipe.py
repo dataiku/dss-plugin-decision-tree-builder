@@ -1,3 +1,4 @@
+import dataiku
 from dataiku.customrecipe import get_input_names_for_role, get_output_names_for_role, get_recipe_config
 from dku_idtb_decision_tree.tree import ScoringTree
 from dku_idtb_scoring.score import add_scoring_columns, get_scored_df_schema, get_metric_df_schema
