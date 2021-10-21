@@ -4,3 +4,4 @@
 * Evaluation recipe: Fix broken import
 * Evaluation recipe: Fix containerized execution (missing import)
 * Evaluation recipe: Add missing key costMatrixWeights in metrics dict
+* Fix wrong documentation link
