@@ -12,7 +12,7 @@ input::-webkit-inner-spin-button {
 }
 
 input[type=number] {
-    -moz-appearance:textfield;
+    -moz-appearance: textfield;
 }
 
 input[placeholder] {
@@ -21,6 +21,12 @@ input[placeholder] {
 
 input[type=checkbox]:disabled {
     cursor: not-allowed;
+}
+
+input[type="number"],
+form input[type="search"],
+form input[type="text"] {
+    font-family: var(--font-family);
 }
 
 form {
