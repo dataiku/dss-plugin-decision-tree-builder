@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 1.0.4 (2021-01-28)
+## Version 1.0.5 (2021-01-28)
 * Evaluation recipe: Fix broken import
 * Minor UI improvement in webapp: fix font in buttons & input fields
 
