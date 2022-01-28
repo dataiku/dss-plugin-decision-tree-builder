@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 1.0.4 (2021-01-28)
+* Evaluation recipe: Fix broken import
+* Minor UI improvement in webapp: fix font in buttons
+
 ## Version 1.0.4 (2021-10)
 * Evaluation recipe: Fix broken import
 * Evaluation recipe: Fix containerized execution (missing import)
