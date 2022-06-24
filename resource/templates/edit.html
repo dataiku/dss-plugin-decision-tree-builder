@@ -1,4 +1,4 @@
-<div class="template" ng-controller="EditController" ng-click="closeColorPicker($event)" ng-keydown="saveShortcut($event)" tabindex="0">
+<div class="template" ng-controller="WebappTreeEditController" ng-click="closeColorPicker($event)" ng-keydown="saveShortcut($event)" tabindex="0">
     <div ng-if="modal.type"
          class="modal-background"
          tabindex=0
@@ -111,20 +111,24 @@
                     <div class="section section-edit section-inline section-label" ng-if="selectedNode.isLeaf">
                         <div class="section-title">
                             Label
-                            <i class="icon-question-sign" title="When scoring or evaluating your dataset, labels are added as additional information to your samples"></i>
+                            <i class="icon-question-sign"
+                               title="When scoring or evaluating your dataset, labels are added as additional information to your samples"></i>
                         </div>
                         <div class="label-div" ng-show="!selectedNode.editLabel">
                             <div class="label" ng-click="enableLabelEdit()">
-                                <div class="ellipsed-text long-text" ng-attr-title="{{selectedNode.label}}">{{selectedNode.label || "No label"}}</div>
+                                <div class="ellipsed-text long-text" ng-attr-title="{{selectedNode.label}}">
+                                    {{selectedNode.label || "No label"}}
+                                </div>
                                 <i class="icon icon-pencil"></i>
                             </div>
-                            <i class="icon icon-trash label"
+                            <i class="icon icon-trash"
                                ng-if="selectedNode.label"
                                ng-click="selectedNode.label = undefined; editLabel()"></i>
                         </div>
                         <form ng-submit="editLabel()" name="labelForm" ng-if="selectedNode.editLabel">
                             <input focus-here
-                                   type="ellipsed-text long-text"
+                                   type="text"
+                                   class="ellipsed-text long-text"
                                    name="label-edit"
                                    ng-model="selectedNode.label"
                                    ng-keyup="$event.keyCode == 27 && resetLabel()">
@@ -135,9 +139,10 @@
                 </div>
             </div>
             <div class="node-splits" ng-if="!splits[selectedNode.id]">
-                <div class="header header-search" ng-class="{'header-border': (search.list != 'feature')}">
+                <form class="header header-search" ng-class="{'header-border': (search.list != 'feature')}">
                     <div class="header-div" ng-if="search.list != 'feature'">Split on...</div>
                     <input focus-here
+                           type="text"
                            placeholder="Feature"
                            ng-if="search.list == 'feature'"
                            class="search-bar"
@@ -148,7 +153,7 @@
                            ng-class="search.list == 'feature' ? 'icon-remove' : 'icon-search'"
                            ng-click="iconClick('feature')"></i>
                     </div>
-                </div>
+                </form>
                 <div class="list list-features">
                     <div class="row row-feature"
                          ng-repeat="(name, info) in features"

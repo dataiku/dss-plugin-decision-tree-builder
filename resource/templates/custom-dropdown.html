@@ -1,0 +1,20 @@
+<div class="control-group">
+    <label ng-click="toggleDropdown()" class="label-text">
+        {{ label }}
+    </label>
+    <div class="custom-dropdown" ng-click="toggleDropdown()">
+        <div class="flex custom-dropdown__title">
+            <div class="ellipsed-text">{{ getPlaceholder() }}</div>
+            <i class="icon-caret-down"></i>
+        </div>
+        <div class="custom-dropdown__body" ng-if="isOpen">
+            <div class="custom-dropdown-row"
+                ng-click="updateSelection(item, $event)"
+                ng-repeat="item in possibleValues | filter: canBeSelected">
+                <i class="icon-ok" ng-class="{'icon--hidden': !isSelected(item)}"></i>
+                <i class="{{ itemImage(item) }}" ng-if="itemImage"></i>
+                <div class="ellipsed-text">{{ display(item) }}</div>
+            </div>
+        </div>
+    </div>
+</div>

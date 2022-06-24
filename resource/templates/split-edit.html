@@ -34,36 +34,20 @@
 </div>
 
 <div class="feature-details" ng-if="selectedSplit">
-    <div class="table-header">
-        <div class="header header-search" ng-class="{'header-border': (search.list != 'split')}">
-            <div class="header-div">Split</div>
-            <div ng-if="search.list == 'split'" class="header-div selected-split-panel-search-bar">
-                <input focus-here class="search-bar" placeholder="Search in {{selectedNode.featureChildren}}"
-                       ng-model="search.string" ng-keyup="$event.keyCode == 27 && (search.list = undefined)">
-                <i class="icon icon-grey icon-remove" ng-click="iconClick('split')"></i>
-            </div>
-            <div class="header-div" ng-if="!treatedAsNum(selectedNode.featureChildren)">
-                <i class="icon icon-grey icon-search"
-                   ng-click="iconClick('split')"
-                   ng-if="search.list != 'split'"></i>
-            </div>
+    <div>
+        <div class="header">
+            <div class="header-div header-border">Split</div>
         </div>
-
-        <div class="edit-row">
-            <div class="edit-row-sub" ng-if="treatedAsNum(selectedNode.featureChildren)">
-                <div class="autosplit"
-                     ng-if="!selectedSplit.left"
-                     ng-click="!selectedNode.children_ids.length && selectedNode.probabilities.length > 1 && autosplit()"
-                     ng-class="(!selectedNode.children_ids.length && selectedNode.probabilities.length > 1) ? 'autosplit-enabled' : 'autosplit-disabled'"
-                     ng-attr-title="{{selectedNode.children_ids.length && 'This node already has splits'
-                                    || selectedNode.probabilities.length < 2 && 'The target takes one or less value in this sample'
-                                    || null}}">
-                    Auto create
+        <div class="split-edit">
+            <div class="split-edit__manual">
+                <div class="split-edit-manual__nb-rows" ng-if="!treatedAsNum(selectedNode.featureChildren)">
+                    <b>{{selectedSplit.value.size}}</b> selected
                 </div>
-                <form ng-submit="submit(selectedSplit, selectedNode.featureChildren)">
+                <form ng-if="treatedAsNum(selectedNode.featureChildren)"
+                      ng-submit="submit(selectedSplit, selectedNode.featureChildren)">
                     <input focus-here
                            type="number"
-                           name="split-input"
+                           name="num-split-input"
                            placeholder="Enter a number"
                            ng-keyup="$event.keyCode == 27 && cancel(split)"
                            ng-model="selectedSplit.value"
@@ -71,41 +55,42 @@
                            step="any"
                            required/>
                 </form>
-            </div>
-            <div class="edit-row-sub" ng-if="!treatedAsNum(selectedNode.featureChildren)">
-                <div>
-                    <b>{{selectedSplit.value.size}}</b> selected
+                <div class="button-div">
+                    <button class="button button-with-borders" ng-click="cancel(split)">Cancel</button>
+                    <button class="button button-with-borders button-save"
+                            type="submit"
+                            ng-click="checkBeforeAdd(selectedSplit, selectedNode.featureChildren)"
+                            ng-disabled="disableAddSplit "
+                            ng-if="!selectedSplit.left">
+                        <i class="icon-plus"></i>&nbsp;Create
+                    </button>
+                    <button class="button button-with-borders button-save"
+                            type="submit"
+                            ng-click="checkBeforeUpdate(selectedSplit, selectedNode.featureChildren)"
+                            ng-disabled="valueNotChanged(treeData[selectedSplit.left], selectedSplit.value) || disableAddSplit"
+                            ng-if="selectedSplit.left">
+                        <i class="icon-pencil"></i>
+                        &nbsp;Apply
+                    </button>
                 </div>
-                <div class="autosplit"
-                     ng-if="!selectedSplit.left"
-                     ng-click="!selectedNode.children_ids.length && selectedNode.probabilities.length > 1 && !histData[selectedNode.featureChildren].same_target_distrib && autosplit(0)"
-                     ng-class="(!selectedNode.children_ids.length && selectedNode.probabilities.length > 1 && !histData[selectedNode.featureChildren].same_target_distrib) ? 'autosplit-enabled' : 'autosplit-disabled'"
-                     ng-attr-title="{{selectedNode.children_ids.length && 'This node already has splits'
-                                    || selectedNode.probabilities.length < 2 && 'The target takes one or less value in this sample'
-                                    || histData[selectedNode.featureChildren].same_target_distrib && ('The target distribution is the same accross the different values of ' + selectedNode.featureChildren)
-                                    || null}}">
-                    Auto create
-                </div>
             </div>
-            <div class="button-div">
-                <button class="button button-with-borders" ng-click="cancel(split)">Cancel</button>
-                <button class="button button-with-borders button-save"
-                        type="submit"
-                        ng-click="checkBeforeAdd(selectedSplit, selectedNode.featureChildren)"
-                        ng-disabled="disableAddSplit "
-                        ng-if="!selectedSplit.left">
-                    <i class="icon-plus"></i>&nbsp;Create
-                </button>
-                <button class="button button-with-borders button-save"
-                        type="submit"
-                        ng-click="checkBeforeUpdate(selectedSplit, selectedNode.featureChildren)"
-                        ng-disabled="valueNotChanged(treeData[selectedSplit.left], selectedSplit.value) || disableAddSplit"
-                        ng-if="selectedSplit.left">
-                    <i class="icon-pencil"></i>
-                    &nbsp;Apply
-                </button>
+            <div class="split-edit__autosplit"
+                    ng-if="!selectedSplit.left"
+                    ng-click="!selectedNode.children_ids.length && selectedNode.probabilities.length > 1 && autosplit()"
+                    ng-class="(!selectedNode.children_ids.length && selectedNode.probabilities.length > 1) ? 'split-edit__autosplit--enabled' : 'split-edit__autosplit--disabled'"
+                    ng-attr-title="{{selectedNode.children_ids.length && 'This node already has splits'
+                                || selectedNode.probabilities.length < 2 && 'The target takes one or less value in this sample'
+                                || null}}">
+                <div>Auto create</div>&nbsp;<i class="icon icon-magic"></i>
             </div>
         </div>
+        <form class="search-row" ng-if="!treatedAsNum(selectedNode.featureChildren)">
+            <div>
+                <input focus-here class="search-row__bar" placeholder="Search in {{selectedNode.featureChildren}}"
+                ng-model="search.string">
+                <i class="icon icon-grey icon-search icon--non-clickable"></i>
+            </div>
+        </form>
     </div>
     <div class="table" ng-if="!treatedAsNum(selectedNode.featureChildren)">
         <div class="table-title">
