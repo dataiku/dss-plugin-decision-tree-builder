@@ -628,6 +628,11 @@ div[histogram] {
 .tree {
     width: 100%;
     height: calc(100% - 40px);
+    cursor: grab;
+}
+
+.tree:active {
+    cursor: grabbing;
 }
 
 .proba-square {
