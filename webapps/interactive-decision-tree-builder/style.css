@@ -550,7 +550,7 @@ div[histogram] {
     color: var(--grey-lighten-2);
 }
 
-.icon-grey:hover {
+.icon-grey:not(.icon--non-clickable):hover {
     color: var(--grey-lighten-4);
 }
 
@@ -835,7 +835,7 @@ div[histogram] {
     justify-content: flex-end;
 }
 
-.icon {
+.icon:not(.icon--non-clickable) {
     cursor: pointer;
 }
 

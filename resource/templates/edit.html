@@ -139,25 +139,23 @@
                 </div>
             </div>
             <div class="node-splits" ng-if="!splits[selectedNode.id]">
-                <form class="header header-search" ng-class="{'header-border': (search.list != 'feature')}">
-                    <div class="header-div" ng-if="search.list != 'feature'">Split on...</div>
+                <form class="header header-search header-div" ng-class="{'header-border': !uiState.featureSearch}">
+                    <div ng-if="!uiState.featureSearch">Split on...</div>
                     <input focus-here
                            type="text"
                            placeholder="Feature"
-                           ng-if="search.list == 'feature'"
+                           ng-if="uiState.featureSearch"
                            class="search-bar"
-                           ng-model="search.string"
-                           ng-keyup="$event.keyCode == 27 && (search.list = undefined)">
-                    <div class="header-div">
-                        <i class="icon icon-grey"
-                           ng-class="search.list == 'feature' ? 'icon-remove' : 'icon-search'"
-                           ng-click="iconClick('feature')"></i>
-                    </div>
+                           ng-model="search.feature"
+                           ng-keyup="$event.keyCode == 27 && (uiState.featureSearch = false)">
+                    <i class="icon icon-grey"
+                        ng-class="uiState.featureSearch ? 'icon-remove' : 'icon-search'"
+                        ng-click="uiState.featureSearch = !uiState.featureSearch"></i>
                 </form>
                 <div class="list list-features">
                     <div class="row row-feature"
                          ng-repeat="(name, info) in features"
-                         ng-show="search.list != 'feature' || name.toLowerCase().includes(search.string.toLowerCase())"
+                         ng-show="!uiState.featureSearch || name.toLowerCase().includes(search.feature.toLowerCase())"
                          ng-click="!loadingHistogram && chooseFeature(name)"
                          ng-class="{'border-selected': selectedNode.featureChildren == name}">
                         <i class="icon-font" ng-show="!treatedAsNum(name)"></i>

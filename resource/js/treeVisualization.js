@@ -179,7 +179,6 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
         }
         showSelected(id, scope);
         shift(id, scope, "selected");
-        scope.search = {};
         scope.selectedNode = scope.treeData[id];
         delete scope.selectedSplit;
         scope.histData = {};
@@ -605,6 +604,13 @@ app.service("SunburstInteractions", function(Format, TreeInteractions) {
 });
 
 app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInteractions, SunburstInteractions, Format) {
+    $scope.search = {
+        feature: '',
+        catSplitValue: ''
+    };
+
+    $scope.uiState = {};
+
     const side = 30;
     $scope.scales = {
         "Default": d3.scale.category20().range().concat(d3.scale.category20b().range()),
@@ -767,17 +773,8 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
         $scope.selectedNode.editLabel = true;
     };
 
-    $scope.iconClick = function(list) {
-        if ($scope.search.list == list) {
-            delete $scope.search.list;
-        } else {
-           $scope.search.string = '';
-           $scope.search.list = list;
-        }
-    };
-
     $scope.chooseFeature = function(feature) {
-        $scope.search = {};
+        $scope.search.feature = '';
         $scope.selectedNode.featureChildren = feature;
         delete $scope.disableAddSplit;
         if (!$scope.histData[feature]) {
@@ -808,7 +805,7 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
     };
 
     $scope.selectSplit = function(split, isNum) {
-        $scope.search = {};
+        $scope.search.catSplitValue = '';
         $scope.selectedSplit = split;
         if (!isNum) {
             $scope.selectedSplit.usedValues = getUsedValues($scope.splits[$scope.selectedNode.id]);
