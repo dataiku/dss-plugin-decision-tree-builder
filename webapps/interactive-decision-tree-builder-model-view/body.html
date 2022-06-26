@@ -14,7 +14,8 @@
     <link rel="stylesheet" href="/plugins/decision-tree-builder/resource/style/style.css" />
     <meta charset="UTF-8"/>
 </head>
-<body ng-app="idtb" ng-controller="IdtbController" ng-click="$broadcast('closeDropdowns', $event.target)" ng-keyup="$broadcast('closeDropdowns')">
-    <div ng-class="{'create': template == 'create'}"
-        ng-include="template == 'create' ? '/plugins/decision-tree-builder/resource/templates/create.html' : '/plugins/decision-tree-builder/resource/templates/edit.html'"></div>
+<body ng-app="idtb" ng-controller="IdtbController"
+      ng-click="$broadcast('closeDropdowns', $event.target)"
+      ng-keyup="$broadcast('closeDropdowns')">
+    <div ng-include="'/plugins/decision-tree-builder/resource/templates/edit.html'"></div>
 </body>

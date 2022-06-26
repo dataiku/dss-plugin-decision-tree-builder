@@ -634,12 +634,12 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
             $scope.colors[value] = $scope.selectedScale[key%$scope.selectedScale.length];
         });
 
-        if (!$scope.selectedNode) return;
-
         if ($scope.template === "sun") {
             SunburstInteractions.updateColors($scope.colors);
         }
+
         else {
+            if (!$scope.selectedNode) return;
             TreeInteractions.select($scope.selectedNode.id, $scope, false, true);
             if ($scope.template === "viz") {
                 TreeInteractions.updateTooltipColors($scope.colors);

@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "label": "Decision tree builder (model view)",
+    "description": "Build manually a decision tree",
+    "icon": "icon-sitemap"
+  },
+
+  "baseType": "STANDARD",
+  "standardWebAppLibraries": ["d3", "dataiku", "font_awesome"],
+  "hasBackend": "true",
+  "roles": [
+    {
+      "type": "SAVED_MODEL",
+      "contentType": "prediction/py_memory/decision_tree",
+      "targetParamsKey": "modelId",
+      "pathParamsKey": "versionId"
+    },
+    {
+      "type": "ANALYSIS",
+      "contentType": "prediction/py_memory/decision_tree",
+      "targetParamsKey": "trainedModelFullModelId"
+    }
+  ],
+  "params": []
+}

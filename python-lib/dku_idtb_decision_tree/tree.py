@@ -149,12 +149,21 @@ class InteractiveTree(Tree):
             return self.get_stats_numerical_node(column, target_column, self.features[col]["mean"])
         return self.get_stats_categorical_node(column, target_column, self.df[col].dropna().apply(safe_str))
 
+    def _apply_missing_value_method(self, column):
+        method = self.features[column.name].get("missing_handling")
+        if method == "NONE":
+            return column.fillna("No values")
+        if method == "IMPUTE":
+            return column.fillna(self.features[column.name]["missing_impute_value"])
+        if method == "DROP_ROW":
+            return column.dropna()
+
     def get_stats_numerical_node(self, column, target_column, mean):
         if column.empty:
             return {"no_values": True}
 
         stats = {"bins": [], "mean": column.mean(), "max": column.max(), "min": column.min()}
-        bins = pd.cut(column.fillna(mean), bins = min(10, column.nunique()), include_lowest = True, right = False)
+        bins = pd.cut(self._apply_missing_value_method(column), bins = min(10, column.nunique()), include_lowest = True, right = False)
         target_grouped = target_column.groupby(bins)
         target_distrib = target_grouped.apply(lambda x: x.value_counts())
         col_distrib = target_grouped.count()
@@ -169,7 +178,7 @@ class InteractiveTree(Tree):
         stats = {"bins": []}
         empty_values = set(unfiltered_col.unique())
         if not column.empty:
-            target_grouped = target_column.groupby(column.fillna("No values").apply(safe_str))
+            target_grouped = target_column.groupby(self._apply_missing_value_method(column).apply(safe_str))
             target_distrib = target_grouped.value_counts(dropna=False)
             col_distrib = target_grouped.count().sort_values(ascending=False)
             empty_values -= set(col_distrib.index)
@@ -200,15 +209,15 @@ class InteractiveTree(Tree):
         else:
             node.set_node_info(samples, self.get_node(0).samples[0], sorted_proba, prediction)
 
-    def add_split(self, parent_id, feature, value):
+    def add_split(self, parent_id, feature, value, left_child_id=None, right_child_id=None):
         parent_node = self.get_node(parent_id)
         if feature in parent_node.treated_as_numerical:
             if not parent_node.children_ids:
-                self.add_numerical_split_no_siblings(parent_node, feature, value)
+                self.add_numerical_split_no_siblings(parent_node, feature, value, left_child_id, right_child_id)
             else:
                 self.add_numerical_split_if_siblings(parent_node, feature, value)
         else:
-            self.add_categorical_split(parent_node, feature, value)
+            self.add_categorical_split(parent_node, feature, value, left_child_id, right_child_id)
         return self.jsonify_nodes()
 
     def add_numerical_split_if_siblings(self, parent_node, feature, value):
@@ -237,22 +246,22 @@ class InteractiveTree(Tree):
         self.add_node(new_node, right_idx)
         return {"left": new_node.jsonify(), "right": right.jsonify(), "parent": parent_node.jsonify()}
 
-    def add_numerical_split_no_siblings(self, parent_node, feature, value):
+    def add_numerical_split_no_siblings(self, parent_node, feature, value, left_child_id=None, right_child_id=None):
         self.features[feature]["nr_uses"] += 1
-        new_node_left = NumericalNode(self.last_index, parent_node.id, set(parent_node.treated_as_numerical), feature, end=value)
+        new_node_left = NumericalNode(left_child_id or self.last_index, parent_node.id, set(parent_node.treated_as_numerical), feature, end=value)
         self.last_index += 1
-        new_node_right = NumericalNode(self.last_index, parent_node.id, set(parent_node.treated_as_numerical), feature, beginning=value)
+        new_node_right = NumericalNode(right_child_id or self.last_index, parent_node.id, set(parent_node.treated_as_numerical), feature, beginning=value)
         self.last_index += 1
         self.add_node(new_node_left)
         self.add_node(new_node_right)
         return {"left": new_node_left.jsonify(), "right": new_node_right.jsonify(), "parent": parent_node.jsonify()}
 
-    def add_categorical_split(self, parent_node, feature, values):
-        left = CategoricalNode(self.last_index, parent_node.id, set(parent_node.treated_as_numerical), feature, values)
+    def add_categorical_split(self, parent_node, feature, values, left_child_id=None, right_child_id=None):
+        left = CategoricalNode(left_child_id or self.last_index, parent_node.id, set(parent_node.treated_as_numerical), feature, values)
         self.last_index += 1
         if not parent_node.children_ids:
             self.features[feature]["nr_uses"] += 1
-            right = CategoricalNode(self.last_index, parent_node.id, set(parent_node.treated_as_numerical), feature, list(values), others=True)
+            right = CategoricalNode(right_child_id or self.last_index, parent_node.id, set(parent_node.treated_as_numerical), feature, list(values), others=True)
             self.last_index += 1
         else:
             right = self.get_node(parent_node.children_ids.pop())
@@ -391,7 +400,7 @@ class InteractiveTree(Tree):
     def jsonify_nodes(self):
         jsonified_tree = {}
         for key, node in self.nodes.items():
-            jsonified_tree[key] = node.jsonify()
+            jsonified_tree[safe_str(key)] = node.jsonify()
         return jsonified_tree
 
     @staticmethod
@@ -404,10 +413,14 @@ class InteractiveTree(Tree):
                 if col_name not in feature_dict:
                     feature_dict[col_name] = {"nr_uses": 0}
                 col = df.loc[:, col_name]
-                if pd.api.types.is_numeric_dtype(col) and col.nunique() > 10:
+                if pd.api.types.is_numeric_dtype(col):
                     feature_dict[col_name]["mean"] = col.mean()
-                    numerical_feature_set.add(col_name)
+                    feature_dict[col_name]["missing_handling"] = "IMPUTE"
+                    feature_dict[col_name]["missing_impute_value"] = feature_dict[col_name]["mean"]
+                    if col.nunique() > 10:
+                        numerical_feature_set.add(col_name)
                 else:
+                    feature_dict[col_name]["missing_handling"] = "NONE"
                     feature_dict[col_name].pop("mean", None)
                     if col.dtype == "bool":
                         df.loc[:, col_name] = df.loc[:, col_name].apply(safe_str)
