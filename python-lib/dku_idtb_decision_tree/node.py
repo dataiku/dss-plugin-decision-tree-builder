@@ -1,3 +1,6 @@
+import pandas as pd
+import numpy as np
+
 class Node(object):
     """
     A node of a decision tree
@@ -78,6 +81,11 @@ class CategoricalNode(Node):
                 self.values.remove(cat)
         if added is not None:
             self.values.extend(added)
+
+    def jsonify(self):
+        jsonified_node = super(CategoricalNode, self).jsonify()
+        jsonified_node["values"] = np.where(pd.isnull(self.values), "N/A", self.values).tolist()
+        return jsonified_node
 
 
 class NumericalNode(Node):
