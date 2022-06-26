@@ -70,10 +70,10 @@ class CategoricalNode(Node):
     def get_type(self):
         return Node.TYPES.CAT
 
-    def apply_filter(self, df):
+    def apply_filter(self, df, series):
         if self.others:
-            return df[~df[self.feature].isin(self.values)]
-        return df[df[self.feature].isin(self.values)]
+            return df[~series.isin(self.values)]
+        return df[series.isin(self.values)]
 
     def update(self, added=None, removed=None):
         if removed is not None:
@@ -99,11 +99,11 @@ class NumericalNode(Node):
     def get_type(self):
         return Node.TYPES.NUM
 
-    def apply_filter(self, df, mean):
+    def apply_filter(self, df, series):
         if self.beginning is not None:
-            df = df[df[self.feature].ge(self.beginning, fill_value=mean)]
+            df = df[series.ge(self.beginning, fill_value=mean)]
         if self.end is not None:
-            df = df[df[self.feature].lt(self.end, fill_value=mean)]
+            df = df[series.lt(self.end, fill_value=mean)]
         return df
 
     def update(self, value, left):

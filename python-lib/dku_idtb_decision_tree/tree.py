@@ -24,12 +24,19 @@ class Tree(object):
         node_id = node.id
         while node_id > 0:
             node = self.get_node(node_id)
-            if node.get_type() == Node.TYPES.NUM:
-                df = node.apply_filter(df, self.features[node.feature]["mean"])
-            else:
-                df = node.apply_filter(df)
+            series = self._apply_missing_value_method(df[node.feature])
+            df = node.apply_filter(df, series)
             node_id = node.parent_id
         return df
+
+    def _apply_missing_value_method(self, column):
+        method = self.features[column.name].get("missing_handling")
+        if method == "NONE":
+            return column.fillna("No values")
+        if method == "IMPUTE":
+            return column.fillna(self.features[column.name]["missing_impute_value"])
+        if method == "DROP_ROW":
+            return column.dropna()
 
     def parse_nodes(self, nodes, rebuild_nodes=False, numerical_features=None):
         self.nodes, ids = {}, deque()
@@ -148,15 +155,6 @@ class InteractiveTree(Tree):
         if col in node.treated_as_numerical:
             return self.get_stats_numerical_node(column, target_column, self.features[col]["mean"])
         return self.get_stats_categorical_node(column, target_column, self.df[col].dropna().apply(safe_str))
-
-    def _apply_missing_value_method(self, column):
-        method = self.features[column.name].get("missing_handling")
-        if method == "NONE":
-            return column.fillna("No values")
-        if method == "IMPUTE":
-            return column.fillna(self.features[column.name]["missing_impute_value"])
-        if method == "DROP_ROW":
-            return column.dropna()
 
     def get_stats_numerical_node(self, column, target_column, mean):
         if column.empty:
