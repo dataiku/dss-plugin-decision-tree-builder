@@ -26,6 +26,7 @@ class Node(object):
     """
 
     class TYPES:
+        ROOT = "root"
         NUM = "num"
         CAT = "cat"
 
@@ -46,6 +47,8 @@ class Node(object):
         self.prediction = prediction
 
     def get_type(self):
+        if self.id == 0:
+            return Node.TYPES.ROOT
         raise NotImplementedError
 
     def rebuild(self, prediction, samples, probabilities):
@@ -70,10 +73,10 @@ class CategoricalNode(Node):
     def get_type(self):
         return Node.TYPES.CAT
 
-    def apply_filter(self, df, series):
+    def apply_filter(self, df):
         if self.others:
-            return df[~series.isin(self.values)]
-        return df[series.isin(self.values)]
+            return df[~df[self.feature].isin(self.values)]
+        return df[df[self.feature].isin(self.values)]
 
     def update(self, added=None, removed=None):
         if removed is not None:
@@ -99,11 +102,11 @@ class NumericalNode(Node):
     def get_type(self):
         return Node.TYPES.NUM
 
-    def apply_filter(self, df, series):
+    def apply_filter(self, df):
         if self.beginning is not None:
-            df = df[series.ge(self.beginning, fill_value=mean)]
+            df = df[df[self.feature].gt(self.beginning)]
         if self.end is not None:
-            df = df[series.lt(self.end, fill_value=mean)]
+            df = df[df[self.feature].le(self.end)]
         return df
 
     def update(self, value, left):

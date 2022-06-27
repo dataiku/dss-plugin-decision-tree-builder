@@ -24,19 +24,22 @@ class Tree(object):
         node_id = node.id
         while node_id > 0:
             node = self.get_node(node_id)
-            series = self._apply_missing_value_method(df[node.feature])
-            df = node.apply_filter(df, series)
+            df = self._apply_missing_value_method(df, node.feature, node)
+            df = node.apply_filter(df)
             node_id = node.parent_id
         return df
 
-    def _apply_missing_value_method(self, column):
-        method = self.features[column.name].get("missing_handling")
+    def _apply_missing_value_method(self, df, column_name, node):
+        method = self.features.get(column_name, {}).get("missing_handling")
+        if node.get_type() == Node.TYPES.CAT and pd.isnull(node.values[0]):
+            method = None # TODO
         if method == "NONE":
-            return column.fillna("No values")
+            return df.fillna({ column_name: "(No values)" })
         if method == "IMPUTE":
-            return column.fillna(self.features[column.name]["missing_impute_value"])
+            return df.fillna({ column_name: self.features[column_name]["missing_impute_value"] })
         if method == "DROP_ROW":
-            return column.dropna()
+            return df.dropna(subset=[column_name])
+        return df
 
     def parse_nodes(self, nodes, rebuild_nodes=False, numerical_features=None):
         self.nodes, ids = {}, deque()
@@ -132,6 +135,7 @@ class InteractiveTree(Tree):
         self.last_index = last_index
         self.sample_method = sample_method
         self.sample_size = sample_size
+        self.preprocessed_to_original_name = {}
         if nodes is None:
             root = Node(0, -1, set())
             root.treated_as_numerical = numerical_feature_set
@@ -149,19 +153,19 @@ class InteractiveTree(Tree):
 
     def get_stats(self, i, col):
         node = self.get_node(i)
-        filtered_df = self.get_filtered_df(node, self.df)
-        column = filtered_df[col]
-        target_column = filtered_df[self.target]
         if col in node.treated_as_numerical:
-            return self.get_stats_numerical_node(column, target_column, self.features[col]["mean"])
-        return self.get_stats_categorical_node(column, target_column, self.df[col].dropna().apply(safe_str))
+            return self.get_stats_numerical_node(node, col)
+        return self.get_stats_categorical_node(node, col)
 
-    def get_stats_numerical_node(self, column, target_column, mean):
+    def get_stats_numerical_node(self, node, col):
+        filtered_df = self.get_filtered_df(node, self.df)
+        column = self._apply_missing_value_method(filtered_df, col, node)[col]
         if column.empty:
             return {"no_values": True}
 
+        target_column = filtered_df[self.target]
         stats = {"bins": [], "mean": column.mean(), "max": column.max(), "min": column.min()}
-        bins = pd.cut(self._apply_missing_value_method(column), bins = min(10, column.nunique()), include_lowest = True, right = False)
+        bins = pd.cut(column, bins = min(10, column.nunique()), include_lowest = True, right = False)
         target_grouped = target_column.groupby(bins)
         target_distrib = target_grouped.apply(lambda x: x.value_counts())
         col_distrib = target_grouped.count()
@@ -172,11 +176,16 @@ class InteractiveTree(Tree):
                                     "count": count})
         return stats
 
-    def get_stats_categorical_node(self, column, target_column, unfiltered_col):
+    def get_stats_categorical_node(self, node, col):
+        filtered_df = self.get_filtered_df(node, self.df)
         stats = {"bins": []}
-        empty_values = set(unfiltered_col.unique())
-        if not column.empty:
-            target_grouped = target_column.groupby(self._apply_missing_value_method(column).apply(safe_str))
+        empty_values = set(self.df[col].dropna().apply(safe_str))
+        column = self._apply_missing_value_method(filtered_df, col, node)[col]
+        if column.empty:
+            stats["no_values"] = True
+        else:
+            target_column = filtered_df[self.target]
+            target_grouped = target_column.groupby(column.apply(safe_str))
             target_distrib = target_grouped.value_counts(dropna=False)
             col_distrib = target_grouped.count().sort_values(ascending=False)
             empty_values -= set(col_distrib.index)
@@ -187,8 +196,7 @@ class InteractiveTree(Tree):
                                       "count": col_distrib[value]})
                 if stats.get("same_target_distrib") and stats["bins"][0]["target_distrib"] != stats["bins"][-1]["target_distrib"]:
                     del stats["same_target_distrib"]
-        else:
-            stats["no_values"] = True
+
         for value in empty_values:
             stats["bins"].append({"value": safe_str(value), "count": 0})
         return stats
@@ -207,15 +215,15 @@ class InteractiveTree(Tree):
         else:
             node.set_node_info(samples, self.get_node(0).samples[0], sorted_proba, prediction)
 
-    def add_split(self, parent_id, feature, value, left_child_id=None, right_child_id=None):
+    def add_split(self, parent_id, feature, value):
         parent_node = self.get_node(parent_id)
         if feature in parent_node.treated_as_numerical:
             if not parent_node.children_ids:
-                self.add_numerical_split_no_siblings(parent_node, feature, value, left_child_id, right_child_id)
+                self.add_numerical_split_no_siblings(parent_node, feature, value)
             else:
                 self.add_numerical_split_if_siblings(parent_node, feature, value)
         else:
-            self.add_categorical_split(parent_node, feature, value, left_child_id, right_child_id)
+            self.add_categorical_split(parent_node, feature, value)
         return self.jsonify_nodes()
 
     def add_numerical_split_if_siblings(self, parent_node, feature, value):
@@ -245,7 +253,7 @@ class InteractiveTree(Tree):
         return {"left": new_node.jsonify(), "right": right.jsonify(), "parent": parent_node.jsonify()}
 
     def add_numerical_split_no_siblings(self, parent_node, feature, value, left_child_id=None, right_child_id=None):
-        self.features[feature]["nr_uses"] += 1
+        self.features[self.preprocessed_to_original_name.get(feature, feature)]["nr_uses"] += 1
         new_node_left = NumericalNode(left_child_id or self.last_index, parent_node.id, set(parent_node.treated_as_numerical), feature, end=value)
         self.last_index += 1
         new_node_right = NumericalNode(right_child_id or self.last_index, parent_node.id, set(parent_node.treated_as_numerical), feature, beginning=value)
@@ -258,7 +266,7 @@ class InteractiveTree(Tree):
         left = CategoricalNode(left_child_id or self.last_index, parent_node.id, set(parent_node.treated_as_numerical), feature, values)
         self.last_index += 1
         if not parent_node.children_ids:
-            self.features[feature]["nr_uses"] += 1
+            self.features[self.preprocessed_to_original_name.get(feature, feature)]["nr_uses"] += 1
             right = CategoricalNode(right_child_id or self.last_index, parent_node.id, set(parent_node.treated_as_numerical), feature, list(values), others=True)
             self.last_index += 1
         else:
@@ -345,7 +353,7 @@ class InteractiveTree(Tree):
         self.delete_node(left, parent)
         if len(parent.children_ids) == 1:
             self.delete_node(right, parent)
-            self.features[left.feature]["nr_uses"] -= 1
+            self.features[self.preprocessed_to_original_name.get(left.feature, left.feature)]["nr_uses"] -= 1
             self.leaves.add(parent.id)
         else:
             if left.get_type() == Node.TYPES.NUM:
@@ -374,13 +382,17 @@ class InteractiveTree(Tree):
         self.leaves.add(node.id)
         to_delete = node.children_ids
         if to_delete:
-            self.features[self.get_node(to_delete[0]).feature]["nr_uses"] -= 1
+            to_delete_node = self.get_node(to_delete[0])
+            original_feature_name = self.preprocessed_to_original_name.get(to_delete_node.feature, to_delete_node.feature)
+            self.features[original_feature_name]["nr_uses"] -= 1
         while to_delete:
             index = to_delete.pop(0)
             children = self.get_node(index).children_ids
             to_delete += children
             if children:
-                self.features[self.get_node(children[0]).feature]["nr_uses"] -= 1
+                child_node = self.get_node(children[0])
+                original_feature_name = self.preprocessed_to_original_name.get(child_node.feature, child_node.feature)
+                self.features[original_feature_name]["nr_uses"] -= 1
             else:
                 self.leaves.remove(index)
             del self.nodes[index]
