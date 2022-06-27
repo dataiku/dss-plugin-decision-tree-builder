@@ -23,7 +23,10 @@ folder_name = "FOLDER" # TODO
 def load():
     try:
         model_handler = get_model_handler()
-        df = model_handler.get_train_df()[0]
+        if model_handler.use_full_df():
+            df, _ = model_handler.get_full_df()
+        else:
+            df, _ = model_handler.get_train_df()
         target = model_handler.get_target_variable()
         tree = InteractiveTree(df, name=None, target=target, sample_method=None, sample_size=None)
         tree_parser = TreeParser(model_handler)
