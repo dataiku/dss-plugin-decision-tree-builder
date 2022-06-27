@@ -110,7 +110,7 @@
                             'record-cat-disabled': selectedSplit.usedValues.has(bin.value),
                             'record-cat-selectable': !selectedSplit.usedValues.has(bin.value) && (!selectedSplit.value || !selectedSplit.value.has(bin.value))}"
                  ng-click="!selectedSplit.usedValues.has(bin.value) && changeCatValue(bin.value, $index, $event)"
-                 ng-if="bin.value != 'No values' && (!search.catSplitValue || bin.value.toString().toLowerCase().includes(search.catSplitValue.toLowerCase()))">
+                 ng-if="bin.value != '(No values)' && (!search.catSplitValue || bin.value.toString().toLowerCase().includes(search.catSplitValue.toLowerCase()))">
                 <div class="ellipsed-text small-text" title="{{bin.value}}">
                     <input type="checkbox"
                            id="{{'checkbox-'+$index}}"

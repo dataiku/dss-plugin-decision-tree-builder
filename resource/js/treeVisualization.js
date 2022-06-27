@@ -21,8 +21,8 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
             }
             return Format.ellipsis(d.values.join(", "), 20);
         }
-        return ((d.hasOwnProperty("beginning") ? ("[" + Format.ellipsis(d.beginning, 8)) : "]-∞") + " ; "
-                + (d.hasOwnProperty("end") ? (Format.ellipsis(d.end, 8) + "[") : "+∞["));
+        return ((d.hasOwnProperty("beginning") ? ("]" + Format.ellipsis(d.beginning, 8)) : "]-∞") + " ; "
+                + (d.hasOwnProperty("end") ? (Format.ellipsis(d.end, 8) + "]") : "+∞["));
     }
 
     const decisionRule = function(node, ellipsis) {
@@ -40,13 +40,13 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
             return node.feature + middle + node.values;
         }
         if (ellipsis) {
-            return (node.hasOwnProperty("beginning") ? (Format.ellipsis(node.beginning, 10) + " ≤ ") : "")
+            return (node.hasOwnProperty("beginning") ? (Format.ellipsis(node.beginning, 10) + " < ") : "")
                 + Format.ellipsis(node.feature, 20)
-                + (node.hasOwnProperty("end") ? (" < " + Format.ellipsis(node.end, 10)) : "");
+                + (node.hasOwnProperty("end") ? (" ≤ " + Format.ellipsis(node.end, 10)) : "");
         }
-        return (node.hasOwnProperty("beginning") ? (node.beginning + " ≤ ") : "")
+        return (node.hasOwnProperty("beginning") ? (node.beginning + " < ") : "")
         + node.feature
-        + (node.hasOwnProperty("end") ? (" < " + node.end) : "");
+        + (node.hasOwnProperty("end") ? (" ≤ " + node.end) : "");
     }
 
     const shift = function(id, scope, classLink, unspread) {
@@ -853,7 +853,7 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
         }
         let filteredCategories = categories.filter(function(elem) {
             return elem.value.toString().toLowerCase().includes(filter.toLowerCase())
-                    && elem.value !== "No values"
+                    && elem.value !== "(No values)"
                     && !$scope.selectedSplit.usedValues.has(elem.value);
         });
         if (filteredCategories.some(_ => !$scope.selectedSplit.value.has(_.value))) {
