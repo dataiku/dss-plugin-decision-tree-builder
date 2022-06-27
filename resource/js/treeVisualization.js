@@ -700,18 +700,6 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
         });
     };
 
-    $scope.close = function(force) {
-        if (!$scope.isSaved && !force) {
-            $scope.createModal.confirm("Are you sure you want to exit without saving? All unsaved changes will be lost.",
-                                        "Exit without saving",
-                                        () => $scope.close(true))
-            return;
-        }
-        delete $scope.config.file;
-        delete $scope.config.dataset;
-        $scope.setTemplate('create');
-    };
-
     $scope.zoomFit = function() {
         TreeInteractions.zoomFit($scope.template == "viz");
     };

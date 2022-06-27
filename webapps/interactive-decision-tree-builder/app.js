@@ -114,6 +114,18 @@
     app.controller("WebappTreeEditController", function($scope, $http, $timeout, $controller, TreeInteractions, SunburstInteractions) {
         $controller("_TreeEditController", {$scope});
 
+        $scope.close = function(force) {
+            if (!$scope.isSaved && !force) {
+                $scope.createModal.confirm("Are you sure you want to exit without saving? All unsaved changes will be lost.",
+                                            "Exit without saving",
+                                            () => $scope.close(true))
+                return;
+            }
+            delete $scope.config.file;
+            delete $scope.config.dataset;
+            $scope.setTemplate('create');
+        };
+
         $scope.$watch("template", function(nv, ov) {
             if (ov == nv) return;
             if (ov == "viz") {
