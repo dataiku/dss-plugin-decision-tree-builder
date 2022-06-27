@@ -79,6 +79,7 @@
             $scope.loadingTree = false;
         }
 
+        $scope.loadingTree = true;
         $http.get(getWebAppBackendUrl("load"))
             .then(function(response) {
                 initTree(response.data);
