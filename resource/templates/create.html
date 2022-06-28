@@ -7,62 +7,73 @@
     </div>
     <div class="subpanel">
         <div class="title">Create or load a tree</div>
-            <div class="subpanel-sections">
-            <form name="createLoad" class="radio-buttons">
-                <div ng-click="config.newTree = true">
+        <div class="subpanel-sections">
+            <div class="form-subsection">
+                <label ng-click="config.newTree = true">
                     <input type="radio" name="create-load" ng-checked="config.newTree">&nbsp;Create new tree
-                </div>
-                <div ng-click="config.newTree = false">
+                </label>
+                <label ng-click="config.newTree = false">
                     <input type="radio" name="create-load" ng-checked="!config.newTree">&nbsp;Load existing tree
-                </div>
-            </form>
-            <div class="subpanel-section" ng-show="config.newTree">
-                <div class="name-section">
-                    Dataset
-                </div>
-                <select ng-options="dataset for dataset in datasets" ng-model="config.dataset">dataset</select>
+                </label>
             </div>
-            <div class="subpanel-section" ng-show="config.newTree">
-                <div class="name-section">
+            <div class="form-subsection" ng-show="config.newTree">
+                <div custom-dropdown
+                    id="dataset"
+                    possible-values="datasets"
+                    item="config.dataset"
+                    item-name="dataset"
+                    label="Dataset"
+                    class="custom-dropdown--set-width">
+                </div>
+            </div>
+            <div class="form-subsection" ng-show="config.newTree && config.dataset">
+                <div custom-dropdown
+                    id="target"
+                    possible-values="features"
+                    item="config.target"
+                    item-name="feature"
+                    label="Target"
+                    class="custom-dropdown--set-width">
+                </div>
+            </div>
+            <div class="form-subsection" ng-show="!config.newTree">
+                <div custom-dropdown
+                    id="file"
+                    possible-values="files"
+                    item="config.file"
+                    item-name="file"
+                    label="File"
+                    class="custom-dropdown--set-width">
+                </div>
+            </div>
+            <div class="form-subsection control-group" ng-show="!config.newTree && config.file">
+                <div class="label-text">
                     Target
                 </div>
-                <select ng-options="feature for feature in features" ng-model="config.target" ng-disabled="!config.dataset">feature</select>
-            </div>
-            <div class="subpanel-section" ng-show="!config.newTree">
-                <div class="name-section">
-                    File
+                <div class=ellipsed-text>
+                    {{config.target}}
                 </div>
-                <select ng-options="file for file in files" ng-model="config.file">file</select>
-            </div>
-            <div class="subpanel-section" ng-show="!config.newTree && config.file">
-                    <div class="name-section">
-                        Target
-                    </div>
-                    <div class=ellipsed-text>
-                        {{config.target}}
-                    </div>
             </div>
         </div>
     </div>
     <div class="subpanel">
         <div class="title">Sampling parameters</div>
         <div class="subpanel-sections">
-            <div class="subpanel-section">
-                <div class="name-section">
-                    Method
+            <div class="form-subsection">
+                <div custom-dropdown
+                    id="method"
+                    form="createLoad"
+                    possible-values="[undefined, 'head', 'random']"
+                    item="config.sampleMethod"
+                    item-name="method"
+                    display="displaySamplingMethod"
+                    label="Method">
                 </div>
-                <select ng-model="config.sampleMethod" style="width: 25%;">
-                    <option ng-value="undefined">Full</option>
-                    <option value="head">Head</option>
-                    <option value="random">Random</option>
-                </select>
             </div>
-            <div ng-show="config.sampleMethod" class="subpanel-section">
-                <div class="name-section">
-                    Sample size
-                </div>
-                <form name="sampleSizeInput">
-                    <input type="number" min="1" step="1" required ng-model="config.sampleSize" ng-keyup="$event.keyCode == 13 && (config.target || config.file) && sampleSizeInput.$valid && edit()">
+            <div ng-show="config.sampleMethod" class="form-subsection">
+                <form name="sampleSizeInput" class="control-group">
+                    <label for="sample-size"><div class="label-text">Sample size</div></label>
+                    <input id="sample-size" type="number" min="1" step="1" required ng-model="config.sampleSize" ng-keyup="$event.keyCode == 13 && (config.target || config.file) && sampleSizeInput.$valid && edit()">
                 </form>
             </div>
         </div>

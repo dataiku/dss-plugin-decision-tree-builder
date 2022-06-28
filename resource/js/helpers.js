@@ -194,3 +194,88 @@ app.directive('focusHere', function ($timeout) {
         }
     };
 });
+
+app.directive("customDropdown", function() {
+    return {
+        scope: {
+            form: '=?',
+            itemImage: '=?',
+            label: '@',
+            itemName: '@',
+            item: '=',
+            items: '=',
+            possibleValues: '=',
+            notAvailableValues: '=',
+            onChange: '=',
+            display: '=?'
+        },
+        restrict: 'A',
+        templateUrl:'/plugins/model-stress-test/resource/templates/custom-dropdown.html',
+        link: function(scope, elem, attrs) {
+            const VALIDITY = "dropdown-not-empty" + (attrs.id ? ("__" + attrs.id) : "");
+            function setValidity() {
+                if (!scope.form) return;
+                scope.form.$setValidity(VALIDITY, !!scope.item || !!(scope.items || {}).size);
+            }
+            setValidity();
+
+            scope.display = scope.display || (item => item === "__dku_missing_value__" ? "" : item);
+
+            scope.canBeSelected = function(item) {
+                if (!scope.notAvailableValues) return true;
+                return item === scope.item || !(item in scope.notAvailableValues);
+            };
+
+            const isMulti = !!attrs.items;
+            scope.isSelected = function(value) {
+                if (isMulti) {
+                    return scope.items.has(value);
+                }
+                return scope.item === value;
+            };
+
+            scope.updateSelection = function(value, event) {
+                if (isMulti) {
+                    if (scope.isSelected(value)) {
+                        scope.items.delete(value);
+                    } else {
+                        scope.items.add(value);
+                    }
+                    event.stopPropagation();
+                } else {
+                    if (scope.item === value) return;
+                    if (scope.onChange) {
+                        scope.onChange(value, scope.item, elem);
+                    }
+                    scope.item = value;
+                }
+                setValidity();
+            };
+
+            scope.getPlaceholder = function() {
+                if (isMulti) {
+                    if (!(scope.items || {}).size) return "Select " + scope.itemName + "s";
+                    return scope.items.size + " " + scope.itemName + (scope.items.size > 1 ? "s" : "");
+                }
+                if (scope.item === null) return "Select a " + scope.itemName;
+                return scope.display(scope.item);
+            };
+
+            scope.toggleDropdown = function() {
+                scope.isOpen = !scope.isOpen;
+            };
+
+            const dropdownElem = elem.find(".custom-dropdown");
+            const labelElem = elem.find(".label-text");
+            scope.$on("closeDropdowns", function(e, target) {
+                if ((target) && ( angular.element(target).closest(dropdownElem)[0]
+                    || angular.element(target).closest(labelElem)[0] )) { return; }
+                scope.isOpen = false;
+            });
+
+            scope.$on("$destroy", function() {
+                scope.form && scope.form.$setValidity(VALIDITY, true);
+            });
+        }
+    }
+});

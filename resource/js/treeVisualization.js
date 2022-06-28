@@ -179,7 +179,6 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
         }
         showSelected(id, scope);
         shift(id, scope, "selected");
-        scope.search = {};
         scope.selectedNode = scope.treeData[id];
         delete scope.selectedSplit;
         scope.histData = {};
@@ -601,5 +600,604 @@ app.service("SunburstInteractions", function(Format, TreeInteractions) {
     return {
         createSun: createSun,
         updateColors: updateColors
+    }
+});
+
+app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInteractions, SunburstInteractions, Format) {
+    $scope.search = {
+        feature: '',
+        catSplitValue: ''
+    };
+
+    $scope.uiState = {};
+
+    const side = 30;
+    $scope.scales = {
+        "Default": d3.scale.category20().range().concat(d3.scale.category20b().range()),
+        "DSS Next": ["#00AEDB", "#8CC63F", "#FFC425", "#F37735", "#D11141", "#91268F", "#194BA3", "#00B159"],
+        "Pastel": ["#EC6547", "#FDC665", "#95C37B", "#75C2CC", "#694A82", "#538BC8", "#65B890", "#A874A0"],
+        "Corporate": ["#0075B2", "#818991", "#EA9423", "#A4C2DB", "#EF3C39", "#009D4B", "#CFD6D3", "#231F20"],
+        "Deuteranopia": ["#193C81", "#7EA0F9", "#211924", "#757A8D", "#D6C222", "#776A37", "#AE963A", "#655E5D"],
+        "Tritanopia": ["#CA0849", "#0B4D61", "#E4B2BF", "#3F6279", "#F24576", "#7D8E98", "#9C4259", "#2B2A2E"],
+        "Pastel 2": ["#f06548", "#fdc766", "#7bc9a6", "#4ec5da", "#548ecb", "#97668f", "#5e2974"]
+    };
+
+    $scope.displayScale = function(scale) {
+        if (!scale) return [];
+        return scale.slice(0,5);
+    };
+
+    $scope.setScale = function(scaleName) {
+        $scope.selectedScale = $scope.scales[scaleName];
+        $scope.colors = {};
+        angular.forEach($scope.targetValues, function(value, key) {
+            $scope.colors[value] = $scope.selectedScale[key%$scope.selectedScale.length];
+        });
+
+        if (!$scope.selectedNode) return;
+
+        if ($scope.template === "sun") {
+            SunburstInteractions.updateColors($scope.colors);
+        }
+        else {
+            TreeInteractions.select($scope.selectedNode.id, $scope, false, true);
+            if ($scope.template === "viz") {
+                TreeInteractions.updateTooltipColors($scope.colors);
+            }
+        }
+    };
+
+    $scope.closeColorPicker = function(event) {
+        if (event.target.matches('.color-picker') || event.target.matches('.icon-tint')) return;
+        $scope.displayColorPicker = false;
+    };
+
+    $scope.recreateSplits = function(nodes) {
+        nodes.forEach(function(node) {
+            node.children_ids.forEach(function(elem, index) {
+                if (index === 0) {
+                    $scope.splits[node.id] = [];
+                } else {
+                    const split = {left: node.children_ids[index-1]};
+                    if ($scope.treeData[elem].hasOwnProperty("beginning")) {
+                        split.right = elem;
+                        split.value = $scope.treeData[elem].beginning;
+                    } else {
+                        split.right = node.children_ids[node.children_ids.length - 1];
+                        split.value = $scope.treeData[elem].values;
+                    }
+                    $scope.splits[node.id].push(split);
+                }
+            });
+        })
+    };
+
+    $scope.save = function() {
+        $scope.createModal.prompt(
+            "Filename",
+            (filename) => save(filename),
+            $scope.config.file,
+            "Save as...",
+            undefined,
+            {"type": "text", "ng-pattern": "/^[/_A-Za-z0-9-]+$/", "placeholder": "Letters, numbers, /, -, _"}
+        );
+    },
+
+    $scope.saveShortcut = function(event) {
+        if (event.key === 's' && (event.metaKey || event.ctrlKey)) {
+            $scope.save();
+            event.preventDefault();
+        }
+    };
+
+    const save = function(filename) {
+        $scope.config.file = filename;
+        $http.post(getWebAppBackendUrl("save"), {"filename": filename + ".json"})
+        .then(function() {
+            $scope.isSaved = true;
+        }, function(e) {
+            $scope.createModal.error(e.data);
+        });
+    };
+
+    $scope.close = function(force) {
+        if (!$scope.isSaved && !force) {
+            $scope.createModal.confirm("Are you sure you want to exit without saving? All unsaved changes will be lost.",
+                                        "Exit without saving",
+                                        () => $scope.close(true))
+            return;
+        }
+        delete $scope.config.file;
+        delete $scope.config.dataset;
+        $scope.setTemplate('create');
+    };
+
+    $scope.zoomFit = function() {
+        TreeInteractions.zoomFit($scope.template == "viz");
+    };
+
+    $scope.zoomBack = function() {
+        TreeInteractions.zoomBack($scope.selectedNode);
+    };
+
+    $scope.toFixedIfNeeded = function(number, decimals, precision) {
+        const lowerBound = 5 * Math.pow(10, -decimals-1);
+        if (number && Math.abs(number) < lowerBound) {
+            if (precision) { // indicates that number is very small instead of rounding to 0 (given that number is positive)
+                return "<" + lowerBound;
+            }
+            return 0;
+        }
+        return Format.toFixedIfNeeded(number, decimals);
+    };
+
+    $scope.editLabel = function() {
+        let label = d3.select("#node-"+$scope.selectedNode.id).select(".label-node");
+        delete $scope.selectedNode.editLabel;
+        if (label.node()) {
+            if (label.text() == $scope.selectedNode.label) return;
+        }
+        $http.post(getWebAppBackendUrl("set-label"),
+        {"node_id": $scope.selectedNode.id,
+        "label": $scope.selectedNode.label})
+        .then(function() {
+            $scope.isSaved = false;
+            if (!$scope.selectedNode.label) {
+                label.remove();
+            } else {
+                if (!label.node()) {
+                    label =  d3.select("#node-" + $scope.selectedNode.id).append("text")
+                                .attr("class", "label-node")
+                                .attr("text-anchor","middle")
+                                .attr("x", side / 2)
+                                .attr("y", side + 15);
+                }
+                label.text($scope.selectedNode.label ? Format.ellipsis($scope.selectedNode.label, 30) : null);
+            }
+        }, function(e) {
+            $scope.createModal.error(e.data);
+        });
+    };
+
+    $scope.resetLabel = function() {
+        const label = d3.select("#node-"+$scope.selectedNode.id).select(".label-node");
+        if (label.node()) {
+            $scope.selectedNode.label = label.text();
+        } else {
+            delete $scope.selectedNode.label;
+        }
+        delete $scope.selectedNode.editLabel;
+    };
+
+    $scope.enableLabelEdit = function() {
+        $scope.selectedNode.editLabel = true;
+    };
+
+    $scope.chooseFeature = function(feature) {
+        $scope.search.feature = '';
+        $scope.selectedNode.featureChildren = feature;
+        delete $scope.disableAddSplit;
+        if (!$scope.histData[feature]) {
+            $scope.loadingHistogram = true;
+            $http.get(getWebAppBackendUrl("select-node/"+$scope.selectedNode.id+"/"+feature))
+            .then(function(response) {
+                $scope.histData[feature] = response.data;
+                $scope.loadingHistogram = false;
+                $scope.createSplit($scope.treatedAsNum(feature));
+            }, function(e) {
+                $scope.loadingHistogram = false;
+                $scope.createModal.error(e.data);
+            });
+        } else {
+            $scope.createSplit($scope.treatedAsNum(feature));
+        }
+    };
+
+    $scope.createSplit = function(isNum) {
+        if (isNum){
+            $scope.selectedSplit = {"value": 0};
+        } else {
+            $scope.selectedSplit = {"value": new Set()};
+            $scope.selectedSplit.usedValues = getUsedValues($scope.splits[$scope.selectedNode.id], true);
+            $scope.selectedSplit.selectAll = false;
+            $scope.disableAddSplit = true;
+        }
+    };
+
+    $scope.selectSplit = function(split, isNum) {
+        $scope.search.catSplitValue = '';
+        $scope.selectedSplit = split;
+        if (!isNum) {
+            $scope.selectedSplit.usedValues = getUsedValues($scope.splits[$scope.selectedNode.id]);
+            $scope.selectedSplit.value = new Set($scope.treeData[split.left].values);
+        } else {
+            $scope.selectedSplit.value = $scope.treeData[split.left].end;
+        }
+    };
+
+    function getUsedValues(splits, newSplit) {
+        if (!splits || newSplit && !splits.length || !newSplit && splits.length <= 1) {
+            return new Set();
+        }
+        let otherValues = [];
+        splits.forEach(function(s) {
+            if (s != $scope.selectedSplit) {
+                otherValues = otherValues.concat($scope.treeData[s.left].values);
+            }
+        });
+        return new Set(otherValues);
+    }
+
+    $scope.valueNotChanged = function(childNode, newValue) {
+        const oldValueCat = childNode.values;
+        // numerical case
+        if (!oldValueCat) {
+            return newValue == childNode.end;
+        }
+        // categorical case
+        if (newValue.size != oldValueCat.length) {
+            return false;
+        }
+
+        for (let index in oldValueCat) {
+            if (!newValue.has(oldValueCat[index])) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    $scope.massSelect = function(filter, categories) {
+        if (!filter) {
+            filter = "";
+        }
+        let filteredCategories = categories.filter(function(elem) {
+            return elem.value.toString().toLowerCase().includes(filter.toLowerCase())
+                    && elem.value !== "No values"
+                    && !$scope.selectedSplit.usedValues.has(elem.value);
+        });
+        if (filteredCategories.some(_ => !$scope.selectedSplit.value.has(_.value))) {
+            filteredCategories.forEach(elem => $scope.selectedSplit.value.add(elem.value));
+            $scope.disableAddSplit = false;
+        } else {
+            filteredCategories.forEach(elem => $scope.selectedSplit.value.delete(elem.value))
+            $scope.disableAddSplit = true;
+        }
+        $scope.selectedSplit.selectAll = categories.length == $scope.selectedSplit.value.size;
+    };
+
+    $scope.changeCatValue = function(value, index, event) {
+        if (event.shiftKey) {
+            $scope.selectedSplit.value.add(value);
+            let indexBefore = index - 1;
+            let elemBefore = $scope.histData[$scope.selectedNode.featureChildren].bins[indexBefore];
+            const before = new Set();
+            while(elemBefore && !$scope.selectedSplit.value.has(elemBefore.value)) {
+                before.add(elemBefore.value);
+                indexBefore -= 1;
+                elemBefore = $scope.histData[$scope.selectedNode.featureChildren].bins[indexBefore];
+            }
+            if (indexBefore > -1) {
+                before.forEach($scope.selectedSplit.value.add, $scope.selectedSplit.value);
+            }
+
+            let indexAfter = index + 1;
+            let elemAfter = $scope.histData[$scope.selectedNode.featureChildren].bins[indexAfter];
+            const after = new Set();
+            while(elemAfter && !$scope.selectedSplit.value.has(elemAfter.value)) {
+                after.add(elemAfter.value);
+                indexAfter += 1;
+                elemAfter = $scope.histData[$scope.selectedNode.featureChildren].bins[indexAfter];
+            }
+            if (indexAfter <  $scope.histData[$scope.selectedNode.featureChildren].bins.length) {
+                after.forEach($scope.selectedSplit.value.add, $scope.selectedSplit.value);
+            }
+            d3.select("#checkbox-" + index).property("checked", "checked");
+        }
+        else {
+            if ($scope.selectedSplit.value.has(value)) {
+                $scope.selectedSplit.value.delete(value);
+            } else {
+                $scope.selectedSplit.value.add(value);
+            }
+        }
+
+        $scope.disableAddSplit = !$scope.selectedSplit.value.size;
+        $scope.selectedSplit.selectAll = $scope.histData[$scope.selectedNode.featureChildren].bins.length == $scope.selectedSplit.value.size;
+    };
+
+    $scope.changeNumValue = function() {
+        $scope.disableAddSplit = $scope.selectedSplit.value == undefined;
+    };
+
+    $scope.cancel = function() {
+        delete $scope.selectedSplit;
+        if (!$scope.splits[$scope.selectedNode.id]) {
+            delete $scope.selectedNode.featureChildren;
+        }
+    };
+
+    $scope.treatedAsNum = function(feature) {
+        return feature in $scope.selectedNode.treated_as_numerical;
+    };
+
+    $scope.changeMeaning = function(becomesNum, feature) {
+        if ($scope.treatedAsNum(feature) == becomesNum) {return;}
+        $scope.loadingHistogram = true;
+        if (becomesNum) {
+            $scope.selectedNode.treated_as_numerical[feature] = null;
+            $scope.disableAddSplit = false;
+        } else {
+            delete $scope.selectedNode.treated_as_numerical[feature];
+        }
+        $scope.createSplit(becomesNum);
+        $http.post(getWebAppBackendUrl("change-meaning"),
+            {"node_id": $scope.selectedNode.id,
+            "feature": feature
+            })
+        .then(function(response) {
+            $scope.histData[feature] = response.data;
+            $scope.loadingHistogram = false;
+        }, function(e) {
+            $scope.loadingHistogram = false;
+            $scope.createModal.error(e.data);
+        });
+    };
+
+    const checkSplitNode = function (parent, split) {
+        let right = $scope.treeData[parent.children_ids[0]];
+        if (!right) {
+            return {};
+        }
+        let i = 0;
+        while (right && right.end < split.value) {
+            i += 1;
+            right = $scope.treeData[parent.children_ids[i]];
+        }
+        return {
+                left_idx: right.end ? i - 1 : i,
+                right_idx: right.end ? i : -1
+            }
+    };
+
+    $scope.autosplit = function() {
+        $scope.createModal.prompt("Maximum number of splits",
+                                (maxSplits) => autosplit(parseFloat(maxSplits)),
+                                undefined,
+                                "Auto-create splits",
+                                "This will automatically create some splits on the currently selected node",
+                                {min: 1, type: "number", step: 1}
+        );
+    };
+
+    const autosplit = function(maxSplits) {
+        $scope.loadingTree = true;
+        $http.post(getWebAppBackendUrl("/auto-split"),
+            {nodeId: $scope.selectedNode.id, feature: $scope.selectedNode.featureChildren, maxSplits: maxSplits})
+        .then(function(response) {
+            delete $scope.selectedSplit;
+            $scope.treeData = response.data;
+            $scope.selectedNode.children_ids = $scope.treeData[$scope.selectedNode.id].children_ids;
+            if (!$scope.selectedNode.children_ids.length) {
+                delete $scope.selectedNode.featureChildren;
+                $scope.createModal.alert("No split could be formed", "Auto-creation: no split");
+                $scope.loadingTree = false;
+                return;
+            }
+            $scope.isSaved = false;
+            $scope.recreateSplits([$scope.selectedNode]);
+            TreeInteractions.select($scope.selectedNode.id, $scope);
+
+            if ($scope.selectedNode.isLeaf) {
+                $scope.selectedNode.isLeaf = false;
+                if ($scope.selectedNode.label) {
+                    delete $scope.selectedNode.label;
+                    $scope.editLabel();
+                }
+                let node = d3.select("#node-" + $scope.selectedNode.id);
+                node.select(".label-node").remove();
+                node.append("text")
+                .classed("feature-children", true)
+                .classed("selected", true)
+                .attr("text-anchor","middle")
+                .attr("x", side / 2)
+                .attr("y", side + 15)
+                .text(Format.ellipsis($scope.selectedNode.featureChildren, 20));
+            }
+            $scope.loadingTree = false;
+        }, function(e) {
+            $scope.loadingTree = false;
+            $scope.createModal.error(e.data);
+        });
+    };
+
+    $scope.checkBeforeAdd = function(split, feature) {
+        if (!$scope.selectedNode.isLeaf && $scope.treatedAsNum(feature)) {
+            const newSplitInfo = checkSplitNode($scope.selectedNode, split);
+            // if new split splits another node (ie. value between the lower and upper bound of the node)
+            if (newSplitInfo.left_idx > -1 && newSplitInfo.right_idx > -1) {
+                const nodeToBeSplit = $scope.treeData[$scope.selectedNode.children_ids[newSplitInfo.right_idx]];
+                if (nodeToBeSplit.children_ids.length) {
+                    const msg = "Creating a split at " + split.value + " will affect downstream parts of your decision tree.\
+                        \nYou will lose all branches below the node '"
+                        + TreeInteractions.decisionRule(nodeToBeSplit, true) + "'";
+                    $scope.createModal.confirm(msg, "Split creation: warning", () => add(split, feature, nodeToBeSplit));
+                    return;
+                }
+            }
+        }
+        add(split, feature);
+    };
+
+    const add = function(split, feature, nodeToBeSplit) {
+        $scope.loadingTree = true;
+        delete $scope.selectedSplit;
+
+        $http.post(getWebAppBackendUrl("add-split"), {
+            parent_id: $scope.selectedNode.id,
+            feature: feature,
+            value: $scope.treatedAsNum(feature) ? split.value : Array.from(split.value),
+        })
+        .then(function(response) {
+            $scope.loadingTree = false;
+            $scope.isSaved = false;
+            if ($scope.selectedNode.isLeaf) {
+                $scope.selectedNode.isLeaf = false;
+                if ($scope.selectedNode.label) {
+                    delete $scope.selectedNode.label;
+                    $scope.editLabel();
+                }
+                let node = d3.select("#node-" + $scope.selectedNode.id);
+                node.select(".label-node").remove();
+                node.append("text")
+                .classed("feature-children", true)
+                .classed("selected", true)
+                .attr("text-anchor","middle")
+                .attr("x", side / 2)
+                .attr("y", side + 15)
+                .text(Format.ellipsis(feature, 20));
+            }
+
+            $scope.treeData = response.data;
+            TreeInteractions.select($scope.selectedNode.id, $scope);
+            $scope.recreateSplits([$scope.selectedNode]);
+            if (nodeToBeSplit) {
+                nodeToBeSplit = $scope.treeData[nodeToBeSplit.id];
+                d3.select("#node-" + nodeToBeSplit.id).select(".feature-children").remove();
+                delete $scope.splits[nodeToBeSplit.id];
+            }
+        }, function(e) {
+            $scope.loadingTree = false;
+            $scope.createModal.error(e.data);
+        });
+    };
+
+    $scope.checkBeforeUpdate = function(split, feature) {
+        if ($scope.treatedAsNum(feature)) {
+            const belowLowerBound = $scope.treeData[split.left].beginning && $scope.treeData[split.left].beginning > split.value;
+            const aboveUpperBound = $scope.treeData[split.right].end && $scope.treeData[split.right].end < split.value;
+            if (belowLowerBound || aboveUpperBound) {
+                const newSplitInfo = checkSplitNode($scope.selectedNode, split);
+                if (newSplitInfo.left_idx > -1 && newSplitInfo.right_idx > -1) {
+                    const nodeToBeSplit = $scope.treeData[$scope.selectedNode.children_ids[newSplitInfo.right_idx]];
+                    const nodeToBeMoved = belowLowerBound ? $scope.treeData[split.left] : $scope.treeData[split.right];
+                    let askForConfirmation;
+                    let msg = "\Updating this split  will affect downstream parts of your decision tree. You will lose all branches below the node '";
+                    if (nodeToBeSplit.children_ids.length) {
+                        msg += TreeInteractions.decisionRule(nodeToBeSplit, true) + "'";
+                        askForConfirmation = true;
+                    }
+                    if (nodeToBeMoved.children_ids.length) {
+                        msg += (askForConfirmation ? " and the node '" : "") +  TreeInteractions.decisionRule(nodeToBeMoved, true) + "'";
+                        askForConfirmation = true;
+                    }
+                    if (askForConfirmation) {
+                        $scope.createModal.confirm(msg, "Split edit: warning", () => update(split, feature, nodeToBeSplit, nodeToBeMoved));
+                        return;
+                    }
+                }
+            }
+        }
+        update(split, feature);
+    };
+
+    const update = function(split, feature, nodeToBeSplit, nodeToBeMoved) {
+        $scope.loadingTree = true;
+        delete $scope.selectedSplit;
+
+        $http.post(getWebAppBackendUrl("update-split"), {
+            "feature": feature,
+            "left_id": split.left,
+            "right_id": split.right,
+            "value": $scope.treatedAsNum(feature) ? split.value : Array.from(split.value)
+        })
+        .then(function(response) {
+            $scope.isSaved = false;
+            $scope.loadingTree = false;
+            $scope.treeData = response.data;
+            TreeInteractions.select($scope.selectedNode.id, $scope);
+            $scope.recreateSplits([$scope.selectedNode]);
+            if (nodeToBeSplit) {
+                nodeToBeSplit = $scope.treeData[nodeToBeSplit.id];
+                d3.select("#node-" + nodeToBeSplit.id).select(".feature-children").remove();
+                delete $scope.splits[nodeToBeSplit.id];
+            }
+            if (nodeToBeMoved) {
+                nodeToBeMoved = $scope.treeData[nodeToBeMoved.id];
+                d3.select("#node-" + nodeToBeMoved.id).select(".feature-children").remove();
+                delete $scope.splits[nodeToBeMoved.id];
+            }
+        }, function(e) {
+            $scope.loadingTree = false;
+            $scope.createModal.error(e.data);
+        });
+    };
+
+    $scope.submit = function(split, feature) {
+        if ($scope.disableAddSplit) return;
+        if (split.left) {
+            $scope.checkBeforeUpdate(split, feature);
+        } else {
+            $scope.checkBeforeAdd(split, feature);
+        }
+    };
+
+    $scope.confirmDelete = function(split, splits, feature) {
+        let msg = "This will delete ";
+        if (splits.length > 1) {
+            msg += "the node '" + TreeInteractions.decisionRule($scope.treeData[split.left], true) + "' and all the branches and nodes below";
+        } else {
+            msg += "the nodes '"
+                    + TreeInteractions.decisionRule($scope.treeData[split.left], true) + "' and '"
+                    + TreeInteractions.decisionRule($scope.treeData[split.right], true) +  "' and all the branches and nodes below them";
+        }
+        $scope.createModal.confirm(msg, "Delete a split", () => del(split, feature));
+    };
+
+    $scope.confirmDeleteAll = function() {
+        $scope.createModal.confirm("This will delete all the branches and nodes below the currently selected node", "Delete all splits", deleteAllSplits);
+    };
+
+    function del(split, feature) {
+        delete $scope.selectedSplit;
+        $scope.loadingTree = true;
+        $http.delete(getWebAppBackendUrl("delete-split"),
+            {"data": {"feature": feature,
+                        "left_id": split.left,
+                        "right_id": split.right,
+                        "parent_id": $scope.selectedNode.id}})
+        .then(function(response) {
+            $scope.loadingTree = false;
+            $scope.isSaved = false;
+
+            $scope.treeData = response.data;
+            TreeInteractions.select($scope.selectedNode.id, $scope);
+            if ($scope.splits[$scope.selectedNode.id].length == 1) {
+                delete $scope.splits[$scope.selectedNode.id];
+                d3.select("#node-" + $scope.selectedNode.id).select(".feature-children").remove();
+            } else {
+                $scope.recreateSplits([$scope.selectedNode]);
+            }
+        }, function(e) {
+            $scope.loadingTree = false;
+            $scope.createModal.error(e.data);
+        });
+    }
+
+    function deleteAllSplits() {
+        $scope.loadingTree = true;
+        $http.delete(getWebAppBackendUrl("delete-all-splits"),
+            {"data": {"parent_id": $scope.selectedNode.id}})
+        .then(function(response) {
+            $scope.loadingTree = false;
+            $scope.isSaved = false;
+            delete $scope.splits[$scope.selectedNode.id];
+            $scope.treeData = response.data;
+            d3.select("#node-" + $scope.selectedNode.id).select(".feature-children").remove();
+            TreeInteractions.select($scope.selectedNode.id, $scope);
+        }, function(e) {
+            $scope.loadingTree = false;
+            $scope.createModal.error(e.data);
+        });
     }
 });
