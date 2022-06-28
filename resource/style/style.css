@@ -683,8 +683,9 @@ div[histogram] {
 }
 
 .section-edit {
-    margin-bottom: 30px;
+    margin-bottom: 16px;
 }
+
 .section-tall {
     max-height: 100px;
 }
