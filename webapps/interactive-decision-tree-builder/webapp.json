@@ -1,7 +1,7 @@
 {
   "meta": {
     "label": "Decision tree builder",
-    "description": "Build manually a decision tree",
+    "description": "Build manually a decision tree (visual webapp)",
     "icon": "icon-sitemap"
   },
 
