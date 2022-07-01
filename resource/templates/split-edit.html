@@ -33,7 +33,7 @@
     <div class="histogram-svg"></div>
 </div>
 
-<div class="feature-details" ng-if="selectedSplit">
+<div class="split-details" ng-if="selectedSplit">
     <div>
         <div class="header">
             <div class="header-div header-border">Split</div>
@@ -57,31 +57,30 @@
                 </form>
                 <div class="button-div">
                     <button class="button button-with-borders" ng-click="cancel(split)">Cancel</button>
-                    <button class="button button-with-borders button-save"
+                    <button class="button button-with-borders button-primary"
                             type="submit"
                             ng-click="checkBeforeAdd(selectedSplit, selectedNode.featureChildren)"
                             ng-disabled="disableAddSplit "
                             ng-if="!selectedSplit.left">
-                        <i class="icon-plus"></i>&nbsp;Create
+                        <i class="icon-plus"></i>Create
                     </button>
-                    <button class="button button-with-borders button-save"
+                    <button class="button button-with-borders button-primary"
                             type="submit"
                             ng-click="checkBeforeUpdate(selectedSplit, selectedNode.featureChildren)"
                             ng-disabled="valueNotChanged(treeData[selectedSplit.left], selectedSplit.value) || disableAddSplit"
                             ng-if="selectedSplit.left">
-                        <i class="icon-pencil"></i>
-                        &nbsp;Apply
+                        <i class="icon-pencil"></i>Apply
                     </button>
                 </div>
             </div>
-            <div class="split-edit__autosplit"
+            <div class="button-text split-edit__autosplit"
                     ng-if="!selectedSplit.left"
                     ng-click="!selectedNode.children_ids.length && selectedNode.probabilities.length > 1 && autosplit()"
-                    ng-class="(!selectedNode.children_ids.length && selectedNode.probabilities.length > 1) ? 'split-edit__autosplit--enabled' : 'split-edit__autosplit--disabled'"
+                    ng-class="{ 'button-text--disabled': !!selectedNode.children_ids.length || !selectedNode.probabilities.length }"
                     ng-attr-title="{{selectedNode.children_ids.length && 'This node already has splits'
                                 || selectedNode.probabilities.length < 2 && 'The target takes one or less value in this sample'
                                 || null}}">
-                <div>Auto create</div>&nbsp;<i class="icon icon-magic"></i>
+                    <i class="icon icon-magic"></i><div>Auto create</div>
             </div>
         </div>
         <form class="search-row" ng-if="!treatedAsNum(selectedNode.featureChildren)">

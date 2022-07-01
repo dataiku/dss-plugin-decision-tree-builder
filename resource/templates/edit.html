@@ -1,5 +1,5 @@
 <div class="template" ng-controller="WebappTreeEditController" ng-click="closeColorPicker($event)" ng-keydown="saveShortcut($event)" tabindex="0">
-    <div class="tree-visualization" ng-class="{'full-screen': template === 'viz' || template === 'sun'}">
+    <div class="visualization" ng-class="{'full-screen': template === 'viz' || template === 'sun'}">
         <div class="toolbar-header">
             <div class="icons-div" ng-class="{'icons-div-tree': template === 'viz' || template === 'edit', 'icons-div-sun': template === 'sun'}">
                 <i class="icon icon-tint icon-grey"
@@ -44,9 +44,9 @@
         </div>
         <div ng-class="template == 'sun' ? 'tree-sunburst' : 'tree'">
             <div class="color-picker" ng-show="displayColorPicker">
-                <div class="row-color-picker row"
+                <div class="row-color-picker row row--interactive"
                      ng-repeat="(name, scale) in scales"
-                     ng-class="{'border-selected': scale == selectedScale}"
+                     ng-class="{'row--selected': scale == selectedScale}"
                      ng-click="scale != selectedScale && setScale(name)">
                     <ul class="color-bars-small color-bars">
                         <li ng-repeat="(targetValue, color) in displayScale(scale)"
@@ -61,7 +61,7 @@
             <spinner ng-if="loadingTree"></spinner>
         </div>
     </div>
-    <div class="edit-panel" ng-if="template === 'edit'">
+    <div class="edit-template" ng-if="template === 'edit'">
         <div class="selected-node-panel" ng-if="loadingTree">
             <spinner></spinner>
         </div>
@@ -147,11 +147,11 @@
                         ng-click="uiState.featureSearch = !uiState.featureSearch"></i>
                 </form>
                 <div class="list list-features">
-                    <div class="row row-feature"
+                    <div class="row row-feature row--interactive"
                          ng-repeat="(name, info) in features"
                          ng-show="!uiState.featureSearch || name.toLowerCase().includes(search.feature.toLowerCase())"
                          ng-click="!loadingHistogram && chooseFeature(name)"
-                         ng-class="{'border-selected': selectedNode.featureChildren == name}">
+                         ng-class="{'row--selected': selectedNode.featureChildren == name}">
                         <i class="icon-font" ng-show="!treatedAsNum(name)"></i>
                         <div class="numerical" ng-show="treatedAsNum(name)">#</div>
                         <div class="ellipsed-text long-text" title="{{name}}">&nbsp;{{name}}</div>
@@ -179,9 +179,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="action" ng-click="createSplit(treatedAsNum(selectedNode.featureChildren))">
-                    <i class="icon-plus"></i>
-                    Add a split
+                <div class="add-split-action button-text" ng-click="createSplit(treatedAsNum(selectedNode.featureChildren))">
+                    <i class="icon-plus"></i>Add a split
                 </div>
             </div>
         </div>
