@@ -38,7 +38,7 @@
                      ng-click="zoomBack()"
                      height="20px">
                 </img>
-                <i class="icon icon-save" ng-click="save()" ng-class="{'icon-grey': isSaved, 'icon-blue': !isSaved}" title="Save as..."></i>
+                <i class="icon icon-save" ng-click="openSaveModal()" ng-class="{'icon-grey': isSaved, 'icon-blue': !isSaved}" title="Save as..."></i>
                 <i ng-if="close" class="icon icon-grey icon-remove" title="Close tree" ng-click="close()"></i>
             </div>
         </div>

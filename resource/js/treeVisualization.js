@@ -672,33 +672,11 @@ app.controller("_TreeEditController", function($scope, $http, TreeInteractions, 
         })
     };
 
-    $scope.save = function() {
-        ModalService.create($scope, {
-            title: "Save as...",
-            promptConfig: {
-                result: $scope.config.file,
-                label: "Filename",
-                conditions: { "type": "text", "ng-pattern": "/^[/_A-Za-z0-9-]+$/", "placeholder": "Letters, numbers, /, -, _" }
-            },
-            confirmAction: filename => save(filename),
-        });
-    },
-
     $scope.saveShortcut = function(event) {
         if (event.key === 's' && (event.metaKey || event.ctrlKey)) {
-            $scope.save();
+            $scope.openSaveModal();
             event.preventDefault();
         }
-    };
-
-    const save = function(filename) {
-        $scope.config.file = filename;
-        $http.post(getWebAppBackendUrl("save"), {"filename": filename + ".json"})
-        .then(function() {
-            $scope.isSaved = true;
-        }, function(e) {
-            ModalService.createBackendErrorModal(e.data);
-        });
     };
 
     $scope.zoomFit = function() {
@@ -744,7 +722,7 @@ app.controller("_TreeEditController", function($scope, $http, TreeInteractions, 
                 label.text($scope.selectedNode.label ? Format.ellipsis($scope.selectedNode.label, 30) : null);
             }
         }, function(e) {
-            ModalService.createBackendErrorModal(e.data);
+            ModalService.createBackendErrorModal($scope, e.data);
         });
     };
 
@@ -775,7 +753,7 @@ app.controller("_TreeEditController", function($scope, $http, TreeInteractions, 
                 $scope.createSplit($scope.treatedAsNum(feature));
             }, function(e) {
                 $scope.loadingHistogram = false;
-                ModalService.createBackendErrorModal(e.data);
+                ModalService.createBackendErrorModal($scope, e.data);
             });
         } else {
             $scope.createSplit($scope.treatedAsNum(feature));
@@ -929,7 +907,7 @@ app.controller("_TreeEditController", function($scope, $http, TreeInteractions, 
             $scope.loadingHistogram = false;
         }, function(e) {
             $scope.loadingHistogram = false;
-            ModalService.createBackendErrorModal(e.data);
+            ModalService.createBackendErrorModal($scope, e.data);
         });
     };
 
@@ -1001,7 +979,7 @@ app.controller("_TreeEditController", function($scope, $http, TreeInteractions, 
             $scope.loadingTree = false;
         }, function(e) {
             $scope.loadingTree = false;
-            ModalService.createBackendErrorModal(e.data);
+            ModalService.createBackendErrorModal($scope, e.data);
         });
     };
 
@@ -1066,7 +1044,7 @@ app.controller("_TreeEditController", function($scope, $http, TreeInteractions, 
             }
         }, function(e) {
             $scope.loadingTree = false;
-            ModalService.createBackendErrorModal(e.data);
+            ModalService.createBackendErrorModal($scope, e.data);
         });
     };
 
@@ -1131,7 +1109,7 @@ app.controller("_TreeEditController", function($scope, $http, TreeInteractions, 
             }
         }, function(e) {
             $scope.loadingTree = false;
-            ModalService.createBackendErrorModal(e.data);
+            ModalService.createBackendErrorModal($scope, e.data);
         });
     };
 
@@ -1190,7 +1168,7 @@ app.controller("_TreeEditController", function($scope, $http, TreeInteractions, 
             }
         }, function(e) {
             $scope.loadingTree = false;
-            ModalService.createBackendErrorModal(e.data);
+            ModalService.createBackendErrorModal($scope, e.data);
         });
     }
 
@@ -1207,7 +1185,7 @@ app.controller("_TreeEditController", function($scope, $http, TreeInteractions, 
             TreeInteractions.select($scope.selectedNode.id, $scope);
         }, function(e) {
             $scope.loadingTree = false;
-            ModalService.createBackendErrorModal(e.data);
+            ModalService.createBackendErrorModal($scope, e.data);
         });
     }
 });

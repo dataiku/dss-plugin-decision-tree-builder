@@ -7,20 +7,23 @@
             <i class="icon icon-grey icon-remove" ng-click="close()"></i>
         </div>
         <div class="modal-body">
-            <div ng-if="msgConfig" ng-class="{ 'modal-body--error': msgConfig.error }">
-                {{ msgConfig.msg }}
-            </div>
-            <form name="promptForm" ng-show="promptConfig" ng-submit="promptForm.$valid && confirmAction(promptConfig && promptConfig.result); close()">
-                <div>
-                    {{ promptConfig.label }}
+            <form name="modalForm" ng-submit="modalForm.$valid && confirmAction(); close()">
+                <div ng-include="customBody"></div>
+                <div ng-if="msgConfig" ng-class="{ 'modal-body--error': msgConfig.error }">
+                    {{ msgConfig.msg }}
                 </div>
-                <input focus-here ng-model="promptConfig.result" required>
+                <div class="modal-form" ng-show="promptConfig">
+                    <div>
+                        {{ promptConfig.label }}
+                    </div>
+                    <input focus-here ng-model="promptConfig.result" required>
+                </div>
             </form>
         </div>
         <div class="modal-footer">
             <div class="button-modal-div">
                 <button type="button" class="button button-modal" ng-if="confirmAction" ng-click="close()">Cancel</button>
-                <button type="button" class="button button-modal" ng-click="(confirmAction && confirmAction(promptConfig && promptConfig.result)); close();" ng-disabled="promptConfig && promptForm.$invalid">Ok</button>
+                <button type="button" class="button button-modal" ng-click="(confirmAction && confirmAction()); close();" ng-disabled="promptConfig && modalForm.$invalid">Ok</button>
             </div>
         </div>
     </div>

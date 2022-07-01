@@ -61,7 +61,7 @@ app.service("ModalService", function($compile, $http) {
     function create(scope, config, templateUrl=DEFAULT_MODAL_TEMPLATE) {
         $http.get(templateUrl).then(function(response) {
             const template = response.data;
-            const newScope = scope.$new(true);
+            const newScope = scope.$new();
             const element = $compile(template)(newScope);
 
             angular.extend(newScope, config);
@@ -174,10 +174,11 @@ app.directive("customDropdown", function() {
             possibleValues: '=',
             notAvailableValues: '=',
             onChange: '=',
-            display: '=?'
+            display: '=?',
+            containerClass: '@'
         },
         restrict: 'A',
-        templateUrl:'/plugins/model-stress-test/resource/templates/custom-dropdown.html',
+        templateUrl:'/plugins/decision-tree-builder/resource/templates/custom-dropdown.html',
         link: function(scope, elem, attrs) {
             const VALIDITY = "dropdown-not-empty" + (attrs.id ? ("__" + attrs.id) : "");
             function setValidity() {
@@ -194,6 +195,10 @@ app.directive("customDropdown", function() {
             };
 
             const isMulti = !!attrs.items;
+            if (!isMulti && !scope.item) {
+                scope.item = null;
+            }
+
             scope.isSelected = function(value) {
                 if (isMulti) {
                     return scope.items.has(value);

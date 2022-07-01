@@ -108,6 +108,28 @@
         TreeInteractions, SunburstInteractions, ModalService) {
         $controller("_TreeEditController", {$scope});
 
+        $scope.openSaveModal = function() {
+            ModalService.create($scope, {
+                title: "Save as...",
+                promptConfig: {
+                    result: $scope.config.file,
+                    label: "Filename",
+                    conditions: { "type": "text", "ng-pattern": "/^[/_A-Za-z0-9-]+$/", "placeholder": "Letters, numbers, /, -, _" }
+                },
+                confirmAction: filename => save(filename),
+            });
+        };
+
+        const save = function(filename) {
+            $scope.config.file = filename;
+            $http.post(getWebAppBackendUrl("save"), {"filename": filename + ".json"})
+            .then(function() {
+                $scope.isSaved = true;
+            }, function(e) {
+                ModalService.createBackendErrorModal($scope, e.data);
+            });
+        };
+
         $scope.close = function(force) {
             if (!$scope.isSaved && !force) {
                 ModalService.create($scope, {

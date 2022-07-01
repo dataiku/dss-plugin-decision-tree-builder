@@ -14,6 +14,44 @@
         TreeInteractions, SunburstInteractions, ModalService) {
         $controller("_TreeEditController", {$scope});
 
+        const save = function(filename, folder) {
+            $scope.config.file = filename;
+            $http.post(getWebAppBackendUrl("save"), { filename: filename + ".json", folder })
+            .then(function() {
+                $scope.isSaved = true;
+            }, function(e) {
+                ModalService.createBackendErrorModal($scope, e.data);
+            });
+        };
+
+        $scope.openSaveModal = function() {
+            if (!$scope.config.folders) {
+                $http.get(getWebAppBackendUrl("get-folders"))
+                    .then(function(response) {
+                        $scope.config.folders = response.data.folders.map(folder => folder.name);
+                        openSaveModal();
+                    }, function(e) {
+                        $scope.loadingTree = false;
+                        ModalService.createBackendErrorModal($scope, e.data);
+                    });
+            } else {
+                openSaveModal();
+            }
+        };
+
+        function openSaveModal() {
+            ModalService.create($scope, {
+                title: "Save as...",
+                customBody: "/plugins/decision-tree-builder/resource/templates/fragments/save-modal-folder-form.html",
+                promptConfig: {
+                    result: $scope.config.file,
+                    label: "Filename",
+                    conditions: { "type": "text", "ng-pattern": "/^[/_A-Za-z0-9-]+$/", "placeholder": "Letters, numbers, /, -, _" }
+                },
+                confirmAction: (promptResult) => save(promptResult, $scope.config.folder),
+            });
+        }
+
         $scope.$watch("template", function(nv, ov) {
             if (ov == nv) return;
             if (ov == "viz") {

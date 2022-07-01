@@ -19,6 +19,16 @@ logging.basicConfig(level=logging.INFO, format="IDTB %(levelname)s - %(message)s
 factory = TreeFactory()
 folder_name = "FOLDER" # TODO
 
+@app.route("/get-folders")
+def get_folders():
+    try:
+        client = dataiku.api_client()
+        project = client.get_default_project()
+        return jsonify(folders=project.list_managed_folders())
+    except:
+        logger.error(traceback.format_exc())
+        return traceback.format_exc(), 500
+
 @app.route("/load", methods=["GET"])
 def load():
     try:
@@ -42,6 +52,7 @@ def load():
 def save():
     try:
         data = json.loads(request.data)
+        folder = dataiku.Folder(data["folder"])
         safe_write_json(factory.get_tree(folder_name).jsonify(), folder, data["filename"])
         return json.dumps({"status": "Tree saved"})
     except:

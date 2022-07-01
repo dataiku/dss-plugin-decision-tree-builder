@@ -365,17 +365,13 @@ spinner {
     height: inherit;
 }
 
-.node-splits > .header {
-    margin-left: 5%;
-    margin-right: 5%;
-    padding-top: 10px;
-}
-
 .header-search {
     justify-content: space-between;
     display: flex;
     align-items: center;
-    height: 24px;
+    margin-left: 5%;
+    margin-right: 5%;
+    padding: 8px 0;
 }
 
 /* Label field (selected node) */
@@ -1025,7 +1021,7 @@ path.selected, path.hovered {
     color: var(--error-red);
 }
 
-[name=promptForm] {
+.modal-form {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
