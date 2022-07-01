@@ -1045,7 +1045,7 @@ path.selected, path.hovered {
     font-size: 14px;
 }
 
-.modal-body-error {
+.modal-body--error {
     color: var(--error-red);
 }
 

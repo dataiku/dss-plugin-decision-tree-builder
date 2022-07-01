@@ -1,21 +1,27 @@
-<div class="modal">
-    <div class="title modal-title">
-        <div>{{modal.title}}</div>
-        <i class="icon icon-grey icon-remove" ng-click="removeModal()"></i>
-    </div>
-    <div class="modal-body" ng-show="modal.msg" ng-class="{'modal-body-error': modal.type === 'error'}">
-        {{modal.msg}}
-    </div>
-    <form name="promptForm" class="modal-body" ng-show="modal.type === 'prompt'" ng-submit="promptForm.$valid && modal.confirmAction(); removeModal()">
-        <div>
-            {{modal.inputLabel}}
+<div class="modal-background" tabindex=0
+     ng-keyup="$event.keyCode == 27 && close()"
+     ng-click="close($event)">
+    <div class="modal">
+        <div class="title modal-title">
+            <div>{{ title }}</div>
+            <i class="icon icon-grey icon-remove" ng-click="close()"></i>
         </div>
-        <input focus-here ng-model="modal.promptResult" required>
-    </form>
-    <div class="modal-footer">
-        <div class="button-modal-div">
-            <button type="button" class="button button-modal" ng-if="modal.type === 'prompt' || modal.type === 'confirm'" ng-click="removeModal()">Cancel</button>
-            <button type="button" class="button button-modal" ng-click="(modal.confirmAction && modal.confirmAction()); removeModal();" ng-disabled="modal.type == 'prompt' && promptForm.$invalid">Ok</button>
+        <div class="modal-body">
+            <div ng-if="msgConfig" ng-class="{ 'modal-body--error': msgConfig.error }">
+                {{ msgConfig.msg }}
+            </div>
+            <form name="promptForm" ng-show="promptConfig" ng-submit="promptForm.$valid && confirmAction(promptConfig && promptConfig.result); close()">
+                <div>
+                    {{ promptConfig.label }}
+                </div>
+                <input focus-here ng-model="promptConfig.result" required>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <div class="button-modal-div">
+                <button type="button" class="button button-modal" ng-if="confirmAction" ng-click="close()">Cancel</button>
+                <button type="button" class="button button-modal" ng-click="(confirmAction && confirmAction(promptConfig && promptConfig.result)); close();" ng-disabled="promptConfig && promptForm.$invalid">Ok</button>
+            </div>
         </div>
     </div>
 </div>
