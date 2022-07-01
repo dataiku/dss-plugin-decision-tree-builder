@@ -1,23 +1,17 @@
 (function() {
     'use strict';
 
-    app.controller("IdtbController", function($scope, ModalService) {
+    app.controller("IdtbController", function($scope) {
         dataiku.checkWebAppParameters();
         $scope.template = "edit";
         $scope.setTemplate = function(newTemplate) {
             $scope.template = newTemplate;
         }
         $scope.config = {};
-        $scope.modal = {};
-        $scope.removeModal = function(event) {
-            if (ModalService.remove($scope.modal)(event)) {
-                angular.element(".template").focus();
-            }
-        };
-        $scope.createModal = ModalService.create($scope.modal);
     });
 
-    app.controller("WebappTreeEditController", function($scope, $http, $controller, $timeout, TreeInteractions, SunburstInteractions) {
+    app.controller("WebappTreeEditController", function($scope, $http, $controller, $timeout,
+        TreeInteractions, SunburstInteractions, ModalService) {
         $controller("_TreeEditController", {$scope});
 
         $scope.$watch("template", function(nv, ov) {
@@ -86,7 +80,7 @@
                 $scope.recreateSplits(Object.values(response.data.nodes));
             }, function(e) {
                 $scope.loadingTree = false;
-                $scope.createModal.error(e.data);
+                ModalService.createBackendErrorModal($scope, e.data);
             });
     });
 })();

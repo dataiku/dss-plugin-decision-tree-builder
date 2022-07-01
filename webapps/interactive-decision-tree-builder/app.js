@@ -1,23 +1,16 @@
 (function() {
     'use strict';
 
-    app.controller("IdtbController", function($scope, ModalService) {
+    app.controller("IdtbController", function($scope) {
         dataiku.checkWebAppParameters();
         $scope.template = "create";
         $scope.setTemplate = function(newTemplate) {
             $scope.template = newTemplate;
-        }
-        $scope.config = {};
-        $scope.modal = {};
-        $scope.removeModal = function(event) {
-            if (ModalService.remove($scope.modal)(event)) {
-                angular.element(".template").focus();
-            }
         };
-        $scope.createModal = ModalService.create($scope.modal);
+        $scope.config = {};
     });
 
-    app.controller("CreateOrLoadController", function($scope, $http) {
+    app.controller("CreateOrLoadController", function($scope, $http, ModalService) {
         $scope.config.sampleMethod = "head";
         $scope.config.newTree = true;
         $scope.$watch("config.newTree", function(nv) {
@@ -33,7 +26,7 @@
                     .then(function(response) {
                         $scope.files = response.data.files;
                     }, function(e) {
-                        $scope.createModal.error(e.data);
+                        ModalService.createBackendErrorModal($scope, e.data);
                     });
                 }
             }
@@ -53,7 +46,7 @@
         .then(function(response) {
             $scope.datasets = response.data.datasets;
         }, function(e) {
-            $scope.createModal.error(e.data);
+            ModalService.createBackendErrorModal($scope, e.data);
         });
 
         const featuresPerDataset = {};
@@ -66,7 +59,7 @@
                         featuresPerDataset[nv] = response.data.features;
                     }, function(e) {
                         delete $scope.features;
-                        $scope.createModal.error(e.data);
+                        ModalService.createBackendErrorModal($scope, e.data);
                     });
                 } else {
                     $scope.features = featuresPerDataset[nv];
@@ -91,7 +84,7 @@
                         $scope.config.target = fileConfig[nv].target;
                     }, function(e) {
                         delete $scope.target;
-                        $scope.createModal.error(e.data);
+                        ModalService.createBackendErrorModal($scope, e.data);
                     });
                 } else {
                     $scope.config.sampleMethod = fileConfig[nv].sampleMethod;
@@ -111,14 +104,19 @@
         };
     });
 
-    app.controller("WebappTreeEditController", function($scope, $http, $timeout, $controller, TreeInteractions, SunburstInteractions) {
+    app.controller("WebappTreeEditController", function($scope, $http, $timeout, $controller,
+        TreeInteractions, SunburstInteractions, ModalService) {
         $controller("_TreeEditController", {$scope});
 
         $scope.close = function(force) {
             if (!$scope.isSaved && !force) {
-                $scope.createModal.confirm("Are you sure you want to exit without saving? All unsaved changes will be lost.",
-                                            "Exit without saving",
-                                            () => $scope.close(true))
+                ModalService.create($scope, {
+                    title: "Exit without saving",
+                    msgConfig: {
+                        msg:"Are you sure you want to exit without saving? All unsaved changes will be lost."
+                    },
+                    confirmAction: () => $scope.close(true)
+                });
                 return;
             }
             delete $scope.config.file;
@@ -192,7 +190,7 @@
                 initTree(response.data);
             }, function(e) {
                 $scope.loadingTree = false;
-                $scope.createModal.error(e.data);
+                ModalService.createBackendErrorModal($scope, e.data);
             });
         }
 
@@ -206,7 +204,7 @@
                 $scope.recreateSplits(Object.values(response.data.nodes));
             }, function(e) {
                 $scope.loadingTree = false;
-                $scope.createModal.error(e.data);
+                ModalService.createBackendErrorModal($scope, e.data);
             });
         }
 

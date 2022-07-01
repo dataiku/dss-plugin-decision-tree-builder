@@ -1,10 +1,4 @@
 <div class="template" ng-controller="WebappTreeEditController" ng-click="closeColorPicker($event)" ng-keydown="saveShortcut($event)" tabindex="0">
-    <div ng-if="modal.type"
-         class="modal-background"
-         tabindex=0
-         ng-keyup="$event.keyCode == 27 && removeModal()"
-         ng-click="removeModal($event)">
-    </div>
     <div class="tree-visualization" ng-class="{'full-screen': template === 'viz' || template === 'sun'}">
         <div class="toolbar-header">
             <div class="icons-div" ng-class="{'icons-div-tree': template === 'viz' || template === 'edit', 'icons-div-sun': template === 'sun'}">
