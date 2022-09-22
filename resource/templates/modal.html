@@ -1,21 +1,30 @@
-<div class="modal">
-    <div class="title modal-title">
-        <div>{{modal.title}}</div>
-        <i class="icon icon-grey icon-remove" ng-click="removeModal()"></i>
-    </div>
-    <div class="modal-body" ng-show="modal.msg" ng-class="{'modal-body-error': modal.type === 'error'}">
-        {{modal.msg}}
-    </div>
-    <form name="promptForm" class="modal-body" ng-show="modal.type === 'prompt'" ng-submit="promptForm.$valid && modal.confirmAction(); removeModal()">
-        <div>
-            {{modal.inputLabel}}
+<div class="dku-modal-background" tabindex="0"
+     ng-keyup="$event.keyCode == 27 && close()"
+     ng-click="close($event)">
+    <div class="dku-modal">
+        <div class="dku-title dku-modal-title">
+            <div>{{ title }}</div>
+            <i class="icon--hoverable icon-remove" ng-click="close()"></i>
         </div>
-        <input focus-here ng-model="modal.promptResult" required>
-    </form>
-    <div class="modal-footer">
-        <div class="button-modal-div">
-            <button type="button" class="button button-modal" ng-if="modal.type === 'prompt' || modal.type === 'confirm'" ng-click="removeModal()">Cancel</button>
-            <button type="button" class="button button-modal" ng-click="(modal.confirmAction && modal.confirmAction()); removeModal();" ng-disabled="modal.type == 'prompt' && promptForm.$invalid">Ok</button>
+        <div class="dku-modal-body">
+            <form name="modalForm" ng-submit="modalForm.$valid && confirmAction(promptConfig && promptConfig.result); close()">
+                <div ng-include="customBody"></div>
+                <div ng-if="msgConfig" ng-class="{ 'dku-modal-body--error': msgConfig.error }">
+                    {{ msgConfig.msg }}
+                </div>
+                <div class="dku-modal-form" ng-show="promptConfig">
+                    <div>
+                        {{ promptConfig.label }}
+                    </div>
+                    <input focus-here ng-model="promptConfig.result" required>
+                </div>
+            </form>
+        </div>
+        <div class="dku-modal-footer">
+            <div class="dku-button-modal-div">
+                <button type="button" class="dku-button dku-button-modal" ng-if="confirmAction" ng-click="close()">Cancel</button>
+                <button type="button" class="dku-button dku-button-modal" ng-click="(confirmAction && confirmAction(promptConfig && promptConfig.result)); close();" ng-disabled="promptConfig && modalForm.$invalid">Ok</button>
+            </div>
         </div>
     </div>
 </div>

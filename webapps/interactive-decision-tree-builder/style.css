@@ -996,47 +996,64 @@ path.selected, path.hovered {
 }
 
 /*MODALS*/
-.modal-footer {
+.dku-modal-footer {
     height: 30px;
     padding-top: 20px;
 }
 
-.button-modal-div {
+.dku-button-modal-div {
     float: right;
 }
 
-.button-modal {
-    font-weight: 500;
+.dku-button-modal {
+    font-weight: 450;
+    font-family: 'SourceSansPro';
+    text-transform: uppercase;
     font-size: 14px;
+    padding: 3px 8px;
+    line-height: 1.4;
+    background-image: inherit;
+    box-shadow: none;
+    text-shadow: none;
+    box-sizing: border-box;
+    outline: 0;
+    cursor: pointer;
+    color: black;
+    border: 1px solid var(--grey-lighten-5);
+    height: 26px;
+    border-color: transparent;
+    background-color: transparent;
+    margin: 0;
 }
 
-.button-modal:disabled {
+.dku-button-modal:disabled {
     color: var(--grey-lighten-5);
 }
 
-.button-modal:enabled:hover {
+.dku-button-modal:enabled:hover {
     color: black;
     background-color: var(--grey-lighten-6);
 }
 
-.button-modal:enabled:active {
+.dku-button-modal:enabled:active {
     color: black;
     background-color: var(--grey-lighten-5);
 }
 
-.modal {
+.dku-modal {
     max-height: 360px;
     width: 500px;
-    padding: 20px;
+    padding: 16px;
+    padding-bottom: 12px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
     background-color: var(--white);
 }
 
-.modal-title {
+.dku-modal-title {
     justify-content: space-between;
 }
 
-.modal-body {
+.dku-modal-body {
     overflow: auto;
     max-height: 250px;
     white-space: pre-line;
@@ -1044,21 +1061,11 @@ path.selected, path.hovered {
     font-size: 14px;
 }
 
-.modal-body-error {
+.dku-modal-body--error {
     color: var(--error-red);
 }
 
-[name=promptForm] {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    padding-bottom: 2px;
-    padding-right: 2px;
-    min-width: 60%;
-    max-width: 80%;
-}
-
-.modal-background {
+.dku-modal-background {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1069,6 +1076,19 @@ path.selected, path.hovered {
     width: 100%;
     height: 100%;
     background-color: rgba(0,0,0,0.4);
+}
+
+.dku-title {
+    display: flex;
+    align-items : center;
+    color: var(--grey-lighten-2);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--grey-lighten-6);
+    padding-bottom: 1%;
+    padding-top: 2%;
+    margin-bottom: 2%;
+    font-size:16px;
+    height: 5%;
 }
 
 .form-subsection + .form-subsection {

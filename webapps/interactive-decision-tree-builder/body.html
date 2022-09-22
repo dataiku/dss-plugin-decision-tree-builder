@@ -16,6 +16,6 @@
 <body ng-app="idtb" ng-controller="IdtbController"
       ng-click="$broadcast('closeDropdowns', $event.target)"
       ng-keyup="($event.keyCode === 27) && $broadcast('closeDropdowns')">
-    <div ng-class="{'create': template == 'create'}"
+    <div id="webapp-main" ng-class="{'create': template == 'create'}"
         ng-include="template == 'create' ? '/plugins/decision-tree-builder/resource/templates/create.html' : '/plugins/decision-tree-builder/resource/templates/edit.html'"></div>
 </body>
