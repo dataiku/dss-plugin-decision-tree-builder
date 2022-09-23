@@ -1,5 +1,5 @@
 'use strict';
-app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
+app.service("TreeInteractions", function($http, $timeout, $compile, ModalService, Format) {
     let svg, tree, currentPath = new Set();
     const side = 30, maxZoom = 3;
 
@@ -366,7 +366,7 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
 app.service("SunburstInteractions", function(Format, TreeInteractions) {
     // Breadcrumb dimensions: width, height, spacing, width of tip/tail.
     const b = {
-            w: 590, h: 20, s: 3, t: 10
+        w: 590, h: 20, s: 3, t: 10
     };
 
     const initializeBreadcrumbTrail = function() {
@@ -603,7 +603,7 @@ app.service("SunburstInteractions", function(Format, TreeInteractions) {
     }
 });
 
-app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInteractions, SunburstInteractions, Format) {
+app.controller("_TreeEditController", function($scope, $http, ModalService, TreeInteractions, SunburstInteractions, Format) {
     $scope.search = {
         feature: '',
         catSplitValue: ''
@@ -710,6 +710,7 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
             ModalService.create($scope, {
                 title: "Exit without saving",
                 confirmAction: () => $scope.close(true),
+                isDangerousAction: true,
                 msgConfig: {
                     msg: "Are you sure you want to exit without saving? All unsaved changes will be lost."
                 }
@@ -1042,6 +1043,7 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
                     ModalService.create($scope, {
                         title: "Split creation: warning",
                         confirmAction: () => add(split, feature, nodeToBeSplit),
+                        isDangerousAction: true,
                         msgConfig: { msg }
                     });
                     return;
@@ -1117,6 +1119,7 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
                         ModalService.create($scope, {
                             title: "Split edit: warning",
                             confirmAction: () => update(split, feature, nodeToBeSplit, nodeToBeMoved),
+                            isDangerousAction: true,
                             msgConfig: { msg }
                         });
                         return;
@@ -1180,6 +1183,7 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
         ModalService.create($scope, {
             title: "Delete a split",
             confirmAction: () => del(split, feature),
+            isDangerousAction: true,
             msgConfig: { msg }
         });
     };
@@ -1188,6 +1192,7 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
         ModalService.create($scope, {
             title: "Delete all splits",
             confirmAction: deleteAllSplits,
+            isDangerousAction: true,
             msgConfig: { msg: "This will delete all the branches and nodes below the currently selected node" }
         });
     };

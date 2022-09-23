@@ -1,14 +1,9 @@
 <div class="panel" ng-controller="CreateOrLoadController">
-    <div ng-if="modal.type"
-        class="modal-background"
-        tabindex=0
-        ng-keyup="$event.keyCode == 27 && removeModal()"
-        ng-click="removeModal($event)">
-    </div>
     <div class="subpanel">
-        <div class="title">Create or load a tree</div>
-        <div class="subpanel-sections">
-            <div class="form-subsection">
+        <div class="dku-title">Create or load a tree</div>
+        <div>
+            <div class="subpanel__form">
+                <div class="label-text">Source</div>
                 <label ng-click="config.newTree = true">
                     <input type="radio" name="create-load" ng-checked="config.newTree">&nbsp;Create new tree
                 </label>
@@ -16,7 +11,7 @@
                     <input type="radio" name="create-load" ng-checked="!config.newTree">&nbsp;Load existing tree
                 </label>
             </div>
-            <div class="form-subsection" ng-show="config.newTree">
+            <div class="subpanel__form" ng-show="config.newTree">
                 <div custom-dropdown
                     id="dataset"
                     possible-values="datasets"
@@ -26,7 +21,7 @@
                     class="custom-dropdown--set-width">
                 </div>
             </div>
-            <div class="form-subsection" ng-show="config.newTree && config.dataset">
+            <div class="subpanel__form" ng-show="config.newTree && config.dataset">
                 <div custom-dropdown
                     id="target"
                     possible-values="features"
@@ -36,7 +31,7 @@
                     class="custom-dropdown--set-width">
                 </div>
             </div>
-            <div class="form-subsection" ng-show="!config.newTree">
+            <div class="subpanel__form" ng-show="!config.newTree">
                 <div custom-dropdown
                     id="file"
                     possible-values="files"
@@ -46,7 +41,7 @@
                     class="custom-dropdown--set-width">
                 </div>
             </div>
-            <div class="form-subsection control-group" ng-show="!config.newTree && config.file">
+            <div class="subpanel__form control-group" ng-show="!config.newTree && config.file">
                 <div class="label-text">
                     Target
                 </div>
@@ -57,9 +52,9 @@
         </div>
     </div>
     <div class="subpanel">
-        <div class="title">Sampling parameters</div>
-        <div class="subpanel-sections">
-            <div class="form-subsection">
+        <div class="dku-title">Sampling parameters</div>
+        <div>
+            <div class="subpanel__form">
                 <div custom-dropdown
                     id="method"
                     form="createLoad"
@@ -70,7 +65,7 @@
                     label="Method">
                 </div>
             </div>
-            <div ng-show="config.sampleMethod" class="form-subsection">
+            <div ng-show="config.sampleMethod" class="subpanel__form">
                 <form name="sampleSizeInput" class="control-group">
                     <label for="sample-size"><div class="label-text">Sample size</div></label>
                     <input id="sample-size" type="number" min="1" step="1" required ng-model="config.sampleSize" ng-keyup="$event.keyCode == 13 && (config.target || config.file) && sampleSizeInput.$valid && edit()">
@@ -78,7 +73,10 @@
             </div>
         </div>
     </div>
-    <div id="start-button-div">
-        <button type="button" class="button" ng-click="edit()" ng-disabled="!config.target && !config.file || config.sampleMethod && sampleSizeInput.$invalid">Start</button>
+    <div class="cta-button-div">
+        <button type="button" class="dku-button dku-button--cta" ng-click="edit()"
+                ng-disabled="!config.target && !config.file || config.sampleMethod && sampleSizeInput.$invalid">
+            Start
+        </button>
     </div>
 </div>

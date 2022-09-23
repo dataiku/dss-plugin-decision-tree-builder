@@ -1,28 +1,30 @@
-<div class="header header-split-edit header-border-light">
-    <div class="header-feature-desc header-div" ng-class="{'with-radio': treatedAsNum(selectedNode.featureChildren)}">
+<div class="header header-split-edit">
+    <div class="header-feature-desc dku-title" ng-class="{'with-radio': treatedAsNum(selectedNode.featureChildren)}">
         <i class="icon-font" ng-show="!treatedAsNum(selectedNode.featureChildren)"></i>
         <div class="numerical" ng-show="treatedAsNum(selectedNode.featureChildren)">#</div>
-        <div class="ellipsed-text long-text" title="{{selectedNode.featureChildren}}">&emsp;{{selectedNode.featureChildren}}</div>
+        <div class="ellipsed-text long-text" title="{{selectedNode.featureChildren}}">
+            &emsp;{{selectedNode.featureChildren}}
+        </div>
     </div>
     <form class="radio-buttons"
           ng-show="features[selectedNode.featureChildren].hasOwnProperty('mean')"
           ng-attr-title="{{!selectedNode.isLeaf ? 'Feature type cannot be changed on a node with splits' : null}}">
-        <div>
+        <label ng-class="{'label--disabled': !selectedNode.isLeaf}">
             <input type="radio"
                    name="change-meaning"
                    ng-disabled="!selectedNode.isLeaf"
                    ng-checked="treatedAsNum(selectedNode.featureChildren)"
-                   ng-click="changeMeaning(true, selectedNode.featureChildren)"
-            >&nbsp;Numerical
-        </div>
-        <div>
+                   ng-click="changeMeaning(true, selectedNode.featureChildren)">
+            Numerical
+        </label>
+        <label ng-class="{'label--disabled': !selectedNode.isLeaf}">
             <input type="radio"
                    name="change-meaning"
                    ng-disabled="!selectedNode.isLeaf"
                    ng-checked="!treatedAsNum(selectedNode.featureChildren)"
-                   ng-click="changeMeaning(false, selectedNode.featureChildren)"
-            >&nbsp;Categorical
-        </div>
+                   ng-click="changeMeaning(false, selectedNode.featureChildren)">
+            Categorical
+        </label>
     </form>
 </div>
 
@@ -33,10 +35,36 @@
     <div class="histogram-svg"></div>
 </div>
 
-<div class="feature-details" ng-if="selectedSplit">
+<div class="split-editor" ng-if="selectedSplit">
     <div>
         <div class="header">
-            <div class="header-div header-border">Split</div>
+            <div class="dku-title spaced-title">
+                <div>
+                    {{ selectedSplit.left === undefined ? 'Create a split' : 'Edit a split' }}
+                </div>
+                <div class="button-div">
+                    <button class="dku-button dku-button--border" ng-click="cancel(split)">
+                        <i class="icon icon-remove"></i>
+                        &nbsp;Cancel
+                    </button>
+                    <button class="dku-button dku-button--border dku-button--primary"
+                            type="submit"
+                            ng-click="checkBeforeAdd(selectedSplit, selectedNode.featureChildren)"
+                            ng-disabled="disableAddSplit "
+                            ng-if="selectedSplit.left === undefined">
+                        <i class="icon-plus"></i>
+                        &nbsp;Create
+                    </button>
+                    <button class="dku-button dku-button--border dku-button--primary"
+                            type="submit"
+                            ng-click="checkBeforeUpdate(selectedSplit, selectedNode.featureChildren)"
+                            ng-disabled="valueNotChanged(treeData[selectedSplit.left], selectedSplit.value) || disableAddSplit"
+                            ng-if="selectedSplit.left !== undefined">
+                        <i class="icon-pencil"></i>
+                        &nbsp;Apply
+                    </button>
+                </div>
+            </div>
         </div>
         <div class="split-edit">
             <div class="split-edit__manual">
@@ -55,41 +83,23 @@
                            step="any"
                            required/>
                 </form>
+                &nbsp;
                 <div class="button-div">
-                    <button class="button button-with-borders" ng-click="cancel(split)">Cancel</button>
-                    <button class="button button-with-borders button-save"
-                            type="submit"
-                            ng-click="checkBeforeAdd(selectedSplit, selectedNode.featureChildren)"
-                            ng-disabled="disableAddSplit "
-                            ng-if="!selectedSplit.left">
-                        <i class="icon-plus"></i>&nbsp;Create
-                    </button>
-                    <button class="button button-with-borders button-save"
-                            type="submit"
-                            ng-click="checkBeforeUpdate(selectedSplit, selectedNode.featureChildren)"
-                            ng-disabled="valueNotChanged(treeData[selectedSplit.left], selectedSplit.value) || disableAddSplit"
-                            ng-if="selectedSplit.left">
-                        <i class="icon-pencil"></i>
-                        &nbsp;Apply
+                    <button type="button" class="dku-button dku-button--primary"
+                            ng-click="!selectedNode.children_ids.length && selectedNode.probabilities.length > 1 && autosplit()"
+                            ng-disabled="selectedNode.children_ids.length || selectedNode.probabilities.length <= 1"
+                            ng-attr-title="{{selectedNode.children_ids.length && 'This node already has splits'
+                                || selectedNode.probabilities.length < 2 && 'The target takes one or less value in this sample'
+                                || null}}">
+                       <i class="icon icon-magic"></i>
+                       &nbsp;Auto create
                     </button>
                 </div>
             </div>
-            <div class="split-edit__autosplit"
-                    ng-if="!selectedSplit.left"
-                    ng-click="!selectedNode.children_ids.length && selectedNode.probabilities.length > 1 && autosplit()"
-                    ng-class="(!selectedNode.children_ids.length && selectedNode.probabilities.length > 1) ? 'split-edit__autosplit--enabled' : 'split-edit__autosplit--disabled'"
-                    ng-attr-title="{{selectedNode.children_ids.length && 'This node already has splits'
-                                || selectedNode.probabilities.length < 2 && 'The target takes one or less value in this sample'
-                                || null}}">
-                <div>Auto create</div>&nbsp;<i class="icon icon-magic"></i>
-            </div>
         </div>
         <form class="search-row" ng-if="!treatedAsNum(selectedNode.featureChildren)">
-            <div>
-                <input focus-here class="search-row__bar" placeholder="Search in {{selectedNode.featureChildren}}"
+            <input focus-here class="search-bar" placeholder="Search value in {{selectedNode.featureChildren}}"
                 ng-model="search.catSplitValue">
-                <i class="icon icon-grey icon-search icon--non-clickable"></i>
-            </div>
         </form>
     </div>
     <div class="table" ng-if="!treatedAsNum(selectedNode.featureChildren)">

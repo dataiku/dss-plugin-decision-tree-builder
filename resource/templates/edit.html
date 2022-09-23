@@ -1,10 +1,4 @@
 <div class="template" ng-controller="WebappTreeEditController" ng-click="closeColorPicker($event)" ng-keydown="saveShortcut($event)" tabindex="0">
-    <div ng-if="modal.type"
-         class="modal-background"
-         tabindex=0
-         ng-keyup="$event.keyCode == 27 && removeModal()"
-         ng-click="removeModal($event)">
-    </div>
     <div class="tree-visualization" ng-class="{'full-screen': template === 'viz' || template === 'sun'}">
         <div class="toolbar-header">
             <div class="icons-div" ng-class="{'icons-div-tree': template === 'viz' || template === 'edit', 'icons-div-sun': template === 'sun'}">
@@ -74,10 +68,10 @@
         <div class="selected-node-panel" ng-if="!loadingTree">
             <div class="node-info">
                 <div class="header">
-                    <div class="header-div">Selected node</div>
+                    <div class="dku-title">Selected node</div>
                 </div>
                 <div class="node-info-sections">
-                    <div class="section section-edit section-tall">
+                    <div class="section-tall">
                         <div class="section-title ellipsed-text">
                             Target probabilities ({{ config.target }})
                         </div>
@@ -89,7 +83,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="section section-edit section-inline">
+                    <div class="section-inline">
                         <div class="section-title">
                             Samples
                         </div>
@@ -98,7 +92,7 @@
                             <em class="info-samples-relative">&nbsp;({{toFixedIfNeeded(selectedNode.samples[1], 2, true)}}%)</em>
                         </div>
                     </div>
-                    <div class="section section-edit section-tall" ng-if="selectedNode.feature">
+                    <div class="section-tall" ng-if="selectedNode.feature">
                         <div class="section-title">
                             Decision rule
                         </div>
@@ -108,7 +102,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="section section-edit section-inline section-label" ng-if="selectedNode.isLeaf">
+                    <div class="section-inline section-label" ng-if="selectedNode.isLeaf">
                         <div class="section-title">
                             Label
                             <i class="icon-question-sign"
@@ -139,34 +133,39 @@
                 </div>
             </div>
             <div class="node-splits" ng-if="!splits[selectedNode.id]">
-                <form class="header header-search header-div" ng-class="{'header-border': !uiState.featureSearch}">
-                    <div ng-if="!uiState.featureSearch">Split on...</div>
-                    <input focus-here
-                           type="text"
-                           placeholder="Feature"
-                           ng-if="uiState.featureSearch"
-                           class="search-bar"
-                           ng-model="search.feature"
-                           ng-keyup="$event.keyCode == 27 && (uiState.featureSearch = false)">
-                    <i class="icon icon-grey"
-                        ng-class="uiState.featureSearch ? 'icon-remove' : 'icon-search'"
-                        ng-click="uiState.featureSearch = !uiState.featureSearch"></i>
-                </form>
-                <div class="list list-features">
-                    <div class="row row-feature"
-                         ng-repeat="(name, info) in features"
-                         ng-show="!uiState.featureSearch || name.toLowerCase().includes(search.feature.toLowerCase())"
-                         ng-click="!loadingHistogram && chooseFeature(name)"
-                         ng-class="{'border-selected': selectedNode.featureChildren == name}">
-                        <i class="icon-font" ng-show="!treatedAsNum(name)"></i>
-                        <div class="numerical" ng-show="treatedAsNum(name)">#</div>
-                        <div class="ellipsed-text long-text" title="{{name}}">&nbsp;{{name}}</div>
+                <div class="header">
+                    <div class="dku-title">
+                        Split on...
+                    </div>
+                </div>
+                <div class="node-splits__features">
+                    <form>
+                        <input focus-here
+                            type="text"
+                            placeholder="Feature"
+                            class="search-bar"
+                            ng-model="search.feature">
+                    </form>
+                    <div class="list list-features">
+                        <div class="row row-feature"
+                            ng-repeat="(name, info) in features"
+                            ng-show="!search.feature || name.toLowerCase().includes(search.feature.toLowerCase())"
+                            ng-click="!loadingHistogram && chooseFeature(name)"
+                            ng-class="{'border-selected': selectedNode.featureChildren == name}">
+                            <i class="icon-font" ng-show="!treatedAsNum(name)"></i>
+                            <div class="numerical" ng-show="treatedAsNum(name)">#</div>
+                            <div class="ellipsed-text long-text" title="{{name}}">&nbsp;{{name}}</div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="node-splits" ng-if="splits[selectedNode.id]">
-                <div class="header header-border">
-                    <div class="header-div">Splits</div>
+                <div class="header spaced-title">
+                    <div class="dku-title">Splits</div>
+                    <button type="button" class="dku-button dku-button--primary" ng-click="createSplit(treatedAsNum(selectedNode.featureChildren))">
+                        <i class="icon-plus"></i>
+                        &nbsp;<div>Add a split</div>
+                    </button>
                 </div>
                 <div class="row row-feature-split">
                     <i class="icon-font" ng-show="!treatedAsNum(selectedNode.featureChildren)"></i>
@@ -184,10 +183,6 @@
                             <i class="icon icon-trash" ng-click="confirmDelete(split, splits[selectedNode.id], selectedNode.featureChildren)"></i>
                         </div>
                     </div>
-                </div>
-                <div class="action" ng-click="createSplit(treatedAsNum(selectedNode.featureChildren))">
-                    <i class="icon-plus"></i>
-                    Add a split
                 </div>
             </div>
         </div>
