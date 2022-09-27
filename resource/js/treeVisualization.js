@@ -597,10 +597,7 @@ app.service("SunburstInteractions", function(Format, TreeInteractions) {
         currentScale = colors;
     }
 
-    return {
-        createSun: createSun,
-        updateColors: updateColors
-    }
+    return { createSun, updateColors };
 });
 
 app.controller("_TreeEditController", function($scope, $http, ModalService, TreeInteractions, SunburstInteractions, Format) {
@@ -634,12 +631,10 @@ app.controller("_TreeEditController", function($scope, $http, ModalService, Tree
             $scope.colors[value] = $scope.selectedScale[key%$scope.selectedScale.length];
         });
 
-        if (!$scope.selectedNode) return;
-
         if ($scope.template === "sun") {
             SunburstInteractions.updateColors($scope.colors);
-        }
-        else {
+        } else {
+            if (!$scope.selectedNode) return;
             TreeInteractions.select($scope.selectedNode.id, $scope, false, true);
             if ($scope.template === "viz") {
                 TreeInteractions.updateTooltipColors($scope.colors);
