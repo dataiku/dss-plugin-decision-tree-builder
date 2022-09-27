@@ -1,4 +1,4 @@
-<div class="control-group">
+<div class="control-group" ng-class="{ disabled: !possibleValues || !possibleValues.length }">
     <label ng-click="toggleDropdown()" class="label-text">
         {{ label }}
     </label>

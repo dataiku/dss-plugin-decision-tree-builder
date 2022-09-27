@@ -179,7 +179,7 @@ app.directive("customDropdown", function() {
             display: '=?'
         },
         restrict: 'A',
-        templateUrl:'/plugins/model-stress-test/resource/templates/custom-dropdown.html',
+        templateUrl:'/plugins/decision-tree-builder/resource/templates/custom-dropdown.html',
         link: function(scope, elem, attrs) {
             const VALIDITY = "dropdown-not-empty" + (attrs.id ? ("__" + attrs.id) : "");
             function setValidity() {

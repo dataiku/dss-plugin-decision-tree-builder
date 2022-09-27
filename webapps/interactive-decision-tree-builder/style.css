@@ -1129,6 +1129,15 @@ path.selected, path.hovered {
     width: 180px;
 }
 
+.control-group.disabled {
+    pointer-events: none;
+}
+
+.control-group.disabled .custom-dropdown {
+    color: var(--grey-lighten-5);
+}
+
+
 .custom-dropdown__title {
     align-items: center;
     justify-content: space-between;
