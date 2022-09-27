@@ -15,16 +15,19 @@
     });
 
     app.controller("CreateOrLoadController", function($scope, $http, ModalService) {
-        $scope.config.sampleMethod = "head";
-        $scope.config.newTree = true;
-        $scope.$watch("config.newTree", function(nv) {
-            if (nv) {
+        $scope.onTreeSourceChange = function(newTree) {
+            if ($scope.config.newTree === newTree) return;
+
+            $scope.config.newTree = newTree;
+            if (newTree) {
                 delete $scope.config.file;
                 delete $scope.config.target;
+
                 $scope.config.sampleMethod = "head";
                 $scope.config.sampleSize = 10000;
             } else {
                 delete $scope.config.dataset;
+                delete $scope.features;
                 if (!$scope.files) {
                     $http.get(getWebAppBackendUrl("get-files"))
                     .then(function(response) {
@@ -34,17 +37,20 @@
                     });
                 }
             }
-        });
+        };
+        $scope.onTreeSourceChange(true)
 
-        $scope.$watch("config.sampleMethod", function(nv, ov) {
-            if(nv) {
-                if (!ov && !$scope.config.hasOwnProperty("sampleSize")) {
-                    $scope.config.sampleSize = 10000;
-                }
-            } else {
+        $scope.onSampleMethodChange = function(nv, ov) {
+            if (!nv) {
                 delete $scope.config.sampleSize;
+                return;
             }
-        });
+
+            if (!ov && !$scope.config.hasOwnProperty("sampleSize")) {
+                $scope.config.sampleSize = 10000;
+            }
+
+        };
 
         $http.get(getWebAppBackendUrl("get-datasets"))
         .then(function(response) {
@@ -54,49 +60,45 @@
         });
 
         const featuresPerDataset = {};
-        $scope.$watch("config.dataset", function(nv) {
-            if (nv) {
-                if (!featuresPerDataset[nv]) {
-                    $http.get(getWebAppBackendUrl("get-features/"+$scope.config.dataset))
-                    .then(function(response) {
-                        $scope.features = response.data.features;
-                        featuresPerDataset[nv] = response.data.features;
-                    }, function(e) {
-                        delete $scope.features;
-                        ModalService.createBackendErrorModal($scope, e.data);
-                    });
-                } else {
-                    $scope.features = featuresPerDataset[nv];
-                }
+        $scope.onDatasetChange = function(nv) {
+            if (!featuresPerDataset[nv]) {
+                $http.get(getWebAppBackendUrl("get-features/" + nv))
+                .then(function(response) {
+                    $scope.features = response.data.features;
+                    featuresPerDataset[nv] = response.data.features;
+                }, function(e) {
+                    delete $scope.features;
+                    ModalService.createBackendErrorModal($scope, e.data);
+                });
             } else {
-                delete $scope.config.target;
+                $scope.features = featuresPerDataset[nv];
             }
-        });
+        };
 
         const fileConfig = {};
-        $scope.$watch("config.file", function(nv) {
-            if (nv) {
-                if (!fileConfig[nv]) {
-                    $http.get(getWebAppBackendUrl("get-config/"+encodeURIComponent(nv)))
-                    .then(function(response) {
-                        fileConfig[nv] = response.data;
-                        if (!fileConfig[nv].sampleSize) {
-                            delete fileConfig[nv].sampleMethod;
-                        }
-                        $scope.config.sampleMethod = fileConfig[nv].sampleMethod;
-                        $scope.config.sampleSize = fileConfig[nv].sampleSize;
-                        $scope.config.target = fileConfig[nv].target;
-                    }, function(e) {
-                        delete $scope.target;
-                        ModalService.createBackendErrorModal($scope, e.data);
-                    });
-                } else {
+        $scope.onFileChange = function(nv) {
+            if (!nv) return;
+
+            if (!fileConfig[nv]) {
+                $http.get(getWebAppBackendUrl("get-config/"+encodeURIComponent(nv)))
+                .then(function(response) {
+                    fileConfig[nv] = response.data;
+                    if (!fileConfig[nv].sampleSize) {
+                        delete fileConfig[nv].sampleMethod;
+                    }
                     $scope.config.sampleMethod = fileConfig[nv].sampleMethod;
                     $scope.config.sampleSize = fileConfig[nv].sampleSize;
                     $scope.config.target = fileConfig[nv].target;
-                }
+                }, function(e) {
+                    delete $scope.target;
+                    ModalService.createBackendErrorModal($scope, e.data);
+                });
+            } else {
+                $scope.config.sampleMethod = fileConfig[nv].sampleMethod;
+                $scope.config.sampleSize = fileConfig[nv].sampleSize;
+                $scope.config.target = fileConfig[nv].target;
             }
-        });
+        };
 
         $scope.edit = function() {
             $scope.setTemplate('edit');

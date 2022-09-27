@@ -4,11 +4,15 @@
         <div>
             <div class="subpanel__form">
                 <div class="label-text">Source</div>
-                <label ng-click="config.newTree = true">
-                    <input type="radio" name="create-load" ng-checked="config.newTree">&nbsp;Create new tree
+                <label for="new-tree">
+                    <input type="radio" id="new-tree"
+                           ng-click="onTreeSourceChange(true)"
+                           ng-checked="config.newTree">&nbsp;Create new tree
                 </label>
-                <label ng-click="config.newTree = false">
-                    <input type="radio" name="create-load" ng-checked="!config.newTree">&nbsp;Load existing tree
+                <label for="saved-tree">
+                    <input type="radio" id="saved-tree"
+                           ng-click="onTreeSourceChange(false)"
+                           ng-checked="!config.newTree">&nbsp;Load existing tree
                 </label>
             </div>
             <div class="subpanel__form" ng-show="config.newTree">
@@ -17,11 +21,12 @@
                     possible-values="datasets"
                     item="config.dataset"
                     item-name="dataset"
+                    on-change="onDatasetChange"
                     label="Dataset"
                     class="custom-dropdown--set-width">
                 </div>
             </div>
-            <div class="subpanel__form" ng-show="config.newTree && config.dataset">
+            <div class="subpanel__form" ng-show="config.newTree">
                 <div custom-dropdown
                     id="target"
                     possible-values="features"
@@ -37,6 +42,7 @@
                     possible-values="files"
                     item="config.file"
                     item-name="file"
+                    on-change="onFileChange"
                     label="File"
                     class="custom-dropdown--set-width">
                 </div>
@@ -61,6 +67,7 @@
                     possible-values="[undefined, 'head', 'random']"
                     item="config.sampleMethod"
                     item-name="method"
+                    on-change="onSampleMethodChange"
                     display="displaySamplingMethod"
                     label="Method">
                 </div>
