@@ -1041,7 +1041,6 @@ path.selected, path.hovered {
 }
 
 .dku-modal {
-    max-height: 360px;
     width: 500px;
     padding-bottom: 12px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
