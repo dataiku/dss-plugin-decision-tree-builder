@@ -2,6 +2,12 @@ import dataiku
 from dataiku.customwebapp import get_webapp_config
 from flask import jsonify, request
 import traceback, json, logging
+try:
+    from urllib.parse import unquote_plus
+except ImportError:
+    # Python 2
+    from urllib import unquote_plus
+
 from dku_idtb_decision_tree.tree import InteractiveTree
 from dku_idtb_decision_tree.tree_factory import TreeFactory
 from dku_idtb_decision_tree.node import Node
@@ -54,7 +60,8 @@ def get_config(filename):
 @app.route("/get-features/<dataset>")
 def get_features(dataset):
     try:
-        return jsonify(features=[col_schema["name"] for col_schema in dataiku.Dataset(dataset).read_schema()])
+        schema = dataiku.Dataset(unquote_plus(dataset)).read_schema()
+        return jsonify(features=[col_schema["name"] for col_schema in schema])
     except:
         logger.error(traceback.format_exc())
         return traceback.format_exc(), 500
@@ -99,7 +106,7 @@ def load():
 @app.route("/select-node/<int:node_id>/<feature>")
 def get_stats_node(node_id, feature):
     try:
-        return jsonify(factory.get_tree(folder_name).get_stats(node_id, feature))
+        return jsonify(factory.get_tree(folder_name).get_stats(node_id, unquote_plus(feature)))
     except:
         logger.error(traceback.format_exc())
         return traceback.format_exc(), 500

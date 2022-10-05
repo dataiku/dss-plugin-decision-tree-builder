@@ -70,7 +70,8 @@
             delete $scope.config.target;
             if (!featuresPerDataset[nv]) {
                 $scope.loadingLandingPage = true;
-                $http.get(getWebAppBackendUrl("get-features/" + nv))
+                const encodedDataset = encodeURIComponent(encodeURIComponent(nv));
+                $http.get(getWebAppBackendUrl(`get-features/${encodedDataset}`))
                 .then(function(response) {
                     $scope.loadingLandingPage = false;
                     $scope.features = response.data.features;
@@ -91,7 +92,7 @@
 
             if (!fileConfig[nv]) {
                 $scope.loadingLandingPage = true;
-                $http.get(getWebAppBackendUrl("get-config/"+encodeURIComponent(nv)))
+                $http.get(getWebAppBackendUrl("get-config/" + nv))
                 .then(function(response) {
                     $scope.loadingLandingPage = false;
 

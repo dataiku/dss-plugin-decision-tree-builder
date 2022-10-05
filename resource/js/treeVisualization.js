@@ -186,7 +186,9 @@ app.service("TreeInteractions", function($http, $timeout, $compile, ModalService
         if (firstChild) {
             if (scope.template == "edit") {
                 scope.loadingHistogram = true;
-                $http.get(getWebAppBackendUrl("select-node/"+id+"/"+scope.treeData[firstChild].feature))
+                const histogramFeature = scope.treeData[firstChild].feature;
+                const encodedFeature = encodeURIComponent(encodeURIComponent(histogramFeature));
+                $http.get(getWebAppBackendUrl(`select-node/${id}/${encodedFeature}`))
                 .then(function(response) {
                     scope.histData[scope.treeData[firstChild].feature] = response.data;
                     scope.selectedNode.featureChildren = scope.treeData[firstChild].feature;
@@ -784,7 +786,8 @@ app.controller("_TreeEditController", function($scope, $http, ModalService, Tree
         delete $scope.disableAddSplit;
         if (!$scope.histData[feature]) {
             $scope.loadingHistogram = true;
-            $http.get(getWebAppBackendUrl("select-node/"+$scope.selectedNode.id+"/"+feature))
+            const encodedFeature = encodeURIComponent(encodeURIComponent(feature));
+            $http.get(getWebAppBackendUrl(`select-node/${$scope.selectedNode.id}/${encodedFeature}`))
             .then(function(response) {
                 $scope.histData[feature] = response.data;
                 $scope.loadingHistogram = false;
@@ -981,7 +984,7 @@ app.controller("_TreeEditController", function($scope, $http, ModalService, Tree
 
     const autosplit = function(maxSplits) {
         $scope.loadingTree = true;
-        $http.post(getWebAppBackendUrl("/auto-split"),
+        $http.post(getWebAppBackendUrl("auto-split"),
             {nodeId: $scope.selectedNode.id, feature: $scope.selectedNode.featureChildren, maxSplits: maxSplits})
         .then(function(response) {
             delete $scope.selectedSplit;
