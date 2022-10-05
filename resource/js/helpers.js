@@ -184,7 +184,7 @@ app.directive("customDropdown", function() {
             const VALIDITY = "dropdown-not-empty" + (attrs.id ? ("__" + attrs.id) : "");
             function setValidity() {
                 if (!scope.form) return;
-                scope.form.$setValidity(VALIDITY, !!scope.item || !!(scope.items || {}).size);
+                scope.form.$setValidity(VALIDITY, scope.item != null || !!(scope.items || {}).size);
             }
             setValidity();
 
@@ -226,7 +226,7 @@ app.directive("customDropdown", function() {
                     if (!(scope.items || {}).size) return "Select " + scope.itemName + "s";
                     return scope.items.size + " " + scope.itemName + (scope.items.size > 1 ? "s" : "");
                 }
-                if (scope.item === null) return "Select a " + scope.itemName;
+                if (scope.item == null) return "Select a " + scope.itemName;
                 return scope.display(scope.item);
             };
 
