@@ -15,19 +15,18 @@
     });
 
     app.controller("CreateOrLoadController", function($scope, $http, ModalService) {
+        $scope.forms = {};
         $scope.onTreeSourceChange = function(newTree) {
-            if ($scope.config.newTree === newTree) return;
-
             $scope.config.newTree = newTree;
+            delete $scope.config.file;
             delete $scope.config.target;
-            if (newTree) {
-                delete $scope.config.file;
+            delete $scope.config.dataset;
+            delete $scope.features;
 
+            if (newTree) {
                 $scope.config.sampleMethod = "head";
                 $scope.config.sampleSize = 10000;
             } else {
-                delete $scope.config.dataset;
-                delete $scope.features;
                 if (!$scope.files) {
                     $scope.loadingLandingPage = true;
                     $http.get(getWebAppBackendUrl("get-files"))
@@ -44,15 +43,14 @@
         $scope.onTreeSourceChange(true)
 
         $scope.onSampleMethodChange = function(nv, ov) {
-            if (!nv) {
+            if (nv === 'full') {
                 delete $scope.config.sampleSize;
                 return;
             }
 
-            if (!ov && !$scope.config.hasOwnProperty("sampleSize")) {
+            if (ov === 'full' && $scope.configsampleSize == null) {
                 $scope.config.sampleSize = 10000;
             }
-
         };
 
         $scope.loadingLandingPage = true;
@@ -97,12 +95,10 @@
                     $scope.loadingLandingPage = false;
 
                     fileConfig[nv] = response.data;
-                    if (!fileConfig[nv].sampleSize) {
-                        delete fileConfig[nv].sampleMethod;
-                    }
                     $scope.config.sampleMethod = fileConfig[nv].sampleMethod;
                     $scope.config.sampleSize = fileConfig[nv].sampleSize;
                     $scope.config.target = fileConfig[nv].target;
+                    $scope.config.dataset = fileConfig[nv].dataset;
                 }, function(e) {
                     $scope.loadingLandingPage = false;
                     delete $scope.target;
@@ -112,6 +108,7 @@
                 $scope.config.sampleMethod = fileConfig[nv].sampleMethod;
                 $scope.config.sampleSize = fileConfig[nv].sampleSize;
                 $scope.config.target = fileConfig[nv].target;
+                $scope.config.dataset = fileConfig[nv].dataset;
             }
         };
 
@@ -120,7 +117,6 @@
         }
 
         $scope.displaySamplingMethod = function(method) {
-            if (!method) return 'Full';
             return method[0].toUpperCase() + method.slice(1)
         };
     });

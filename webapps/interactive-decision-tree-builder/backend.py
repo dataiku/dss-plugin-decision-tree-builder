@@ -51,8 +51,14 @@ def get_files():
 @app.route("/get-config/<path:filename>")
 def get_config(filename):
     try:
-        jsonFile = folder.read_json(filename)
-        return json.dumps({"sampleMethod": jsonFile["sample_method"], "sampleSize": jsonFile["sample_size"], "target": jsonFile["target"]})
+        json_file = folder.read_json(filename)
+        sample_method = json_file["sample_method"] if json_file["sample_size"] is not None else 'full'
+        return json.dumps({
+            "dataset": json_file["name"],
+            "sampleMethod": sample_method,
+            "sampleSize": json_file["sample_size"],
+            "target": json_file["target"]
+        })
     except:
         logger.error(traceback.format_exc())
         return traceback.format_exc(), 500
@@ -70,7 +76,8 @@ def get_features(dataset):
 def create():
     try:
         data = json.loads(request.data)
-        df = dataiku.Dataset(data["name"]).get_dataframe(sampling=data.get("sample_method", "head"), limit=data.get("sample_size"))
+        sample_method = 'head' if data["sample_method"] == "full" else data["sample_method"]
+        df = dataiku.Dataset(data["name"]).get_dataframe(sampling=sample_method, limit=data.get("sample_size"))
         tree = InteractiveTree(df, **data)
         factory.set_tree(folder_name, tree)
         return jsonify(nodes=tree.jsonify_nodes(), target_values=tree.target_values, features=tree.features)
@@ -93,7 +100,8 @@ def load():
     try:
         data = json.loads(request.data)
         jsonified_tree = folder.read_json(data["filename"])
-        name, sample_method, sample_size = jsonified_tree["name"], data.get("sample_method", "head"), data.get("sample_size")
+        sample_method = 'head' if data["sample_method"] == "full" else data["sample_method"]
+        name, sample_size = jsonified_tree["name"], data.get("sample_size")
         df = dataiku.Dataset(name).get_dataframe(sampling=sample_method, limit=sample_size)
         tree = InteractiveTree(df, name, jsonified_tree["target"], sample_method, sample_size,
                                 jsonified_tree["nodes"], jsonified_tree["last_index"], jsonified_tree["features"])

@@ -8,25 +8,14 @@
                     <div class="label-text">Source</div>
                     <label for="new-tree">
                         <input type="radio" id="new-tree"
-                            ng-click="onTreeSourceChange(true)"
+                            ng-click="!config.newTree && onTreeSourceChange(true)"
                             ng-checked="config.newTree">&nbsp;Create new tree
                     </label>
                     <label for="saved-tree">
                         <input type="radio" id="saved-tree"
-                            ng-click="onTreeSourceChange(false)"
+                            ng-click="config.newTree && onTreeSourceChange(false)"
                             ng-checked="!config.newTree">&nbsp;Load existing tree
                     </label>
-                </div>
-                <div class="subpanel__form" ng-show="config.newTree">
-                    <div custom-dropdown
-                        id="dataset"
-                        possible-values="datasets"
-                        item="config.dataset"
-                        item-name="dataset"
-                        on-change="onDatasetChange"
-                        label="Dataset"
-                        class="custom-dropdown--set-width">
-                    </div>
                 </div>
                 <div class="subpanel__form" ng-show="!config.newTree">
                     <div custom-dropdown
@@ -36,6 +25,17 @@
                         item-name="file"
                         on-change="onFileChange"
                         label="File"
+                        class="custom-dropdown--set-width">
+                    </div>
+                </div>
+                <div class="subpanel__form">
+                    <div custom-dropdown
+                        id="dataset"
+                        ng-attr-possible-values="config.newTree ? datasets : ''"
+                        item="config.dataset"
+                        item-name="dataset"
+                        on-change="onDatasetChange"
+                        label="Dataset"
                         class="custom-dropdown--set-width">
                     </div>
                 </div>
@@ -58,7 +58,7 @@
                     <div custom-dropdown
                         id="method"
                         form="createLoad"
-                        possible-values="[undefined, 'head', 'random']"
+                        possible-values="['full', 'head', 'random']"
                         item="config.sampleMethod"
                         item-name="method"
                         on-change="onSampleMethodChange"
@@ -66,8 +66,8 @@
                         label="Method">
                     </div>
                 </div>
-                <div ng-show="config.sampleMethod" class="subpanel__form">
-                    <form name="sampleSizeInput" class="control-group">
+                <div ng-if="config.sampleMethod !== 'full'" class="subpanel__form">
+                    <form name="forms.sampleSizeInput" class="control-group">
                         <label for="sample-size"><div class="label-text">Sample size</div></label>
                         <input id="sample-size" type="number" min="1" step="1" required ng-model="config.sampleSize" ng-keyup="$event.keyCode == 13 && (config.target || config.file) && sampleSizeInput.$valid && edit()">
                     </form>
@@ -76,7 +76,7 @@
         </div>
         <div class="cta-button-div">
             <button type="button" class="dku-button dku-button--cta" ng-click="edit()"
-                    ng-disabled="!config.target && !config.file || config.sampleMethod && sampleSizeInput.$invalid">
+                    ng-disabled="!config.target && !config.file || config.sampleMethod && forms.sampleSizeInput.$invalid">
                 Start
             </button>
         </div>

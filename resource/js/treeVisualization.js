@@ -714,11 +714,6 @@ app.controller("_TreeEditController", function($scope, $http, ModalService, Tree
             });
             return;
         }
-        delete $scope.config.file;
-        delete $scope.config.dataset;
-        delete $scope.config.target;
-        delete $scope.config.sampleMethod;
-        delete $scope.config.sampleSize;
         $scope.setTemplate('create');
     };
 
