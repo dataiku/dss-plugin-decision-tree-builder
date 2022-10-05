@@ -180,7 +180,7 @@ spinner {
     background-color : var(--grey-lighten-5);
 }
 
-.dku-button--border:hover:active {
+.dku-button--border:enabled:active {
     background-color : var(--grey-lighten-4);
 }
 
@@ -214,7 +214,7 @@ spinner {
     background-color: var(--blue-lighten-5);
 }
 
-.dku-button--border.dku-button--primary:hover:active {
+.dku-button--border.dku-button--primary:enabled:active {
     background-color: var(--blue-lighten-4);
 }
 
@@ -240,7 +240,7 @@ spinner {
     background-color: var(--blue);
 }
 
-.dku-button--cta:enabled:hover:active {
+.dku-button--cta:enabled:enabled:active {
     background-color: var(--blue-darken-2);
 }
 
@@ -517,7 +517,7 @@ input[name=num-split-input] {
 }
 
 div[histogram] {
-     display: flex;
+    flex: 0 0 auto;
 }
 
 .histogram-placeholder {
@@ -1038,6 +1038,24 @@ path.selected, path.hovered {
 
 .dku-button-modal.dku-button--primary:enabled:active {
     background-color: var(--blue-lighten-4);
+}
+
+
+.dku-button--danger {
+    color : var(--error-red);
+}
+
+.dku-button-modal.dku-button--danger:disabled {
+    color: #f0b8bf;
+}
+
+.dku-button-modal.dku-button--danger:enabled:hover {
+    background-color: #f9e3e5;
+    color: var(--error-red);
+}
+
+.dku-button-modal.dku-button--danger:enabled:active {
+    background-color: #f0b8bf;
 }
 
 .dku-modal {

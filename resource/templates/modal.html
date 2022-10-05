@@ -25,7 +25,7 @@
                     Cancel
                 </button>
                 <button type="button" class="dku-button dku-button-modal"
-                        ng-class="{ 'dku-button--primary': confirmAction, 'dku-button--danger': isDangerousAction }"
+                        ng-class="{ 'dku-button--primary': confirmAction && !isDangerousAction, 'dku-button--danger': isDangerousAction }"
                         ng-click="(confirmAction && confirmAction(promptConfig && promptConfig.result)); close();"
                         ng-disabled="promptConfig && modalForm.$invalid">
                     {{ confirmAction ? 'Confirm' : 'Ok' }}

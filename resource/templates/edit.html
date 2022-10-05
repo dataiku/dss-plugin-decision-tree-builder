@@ -176,7 +176,8 @@
                     </div>
                 </div>
                 <div class="list list-splits">
-                    <div class="row row-split" ng-repeat="split in splits[selectedNode.id]">
+                    <div class="row row-split" ng-class="{ 'border-selected': selectedSplit === split }"
+                         ng-repeat="split in splits[selectedNode.id]">
                         <div class="ellipsed-text long-text" title="{{treeData[split.left].values || treeData[split.left].end}}">{{treeData[split.left].values.join(", ") || treeData[split.left].end}}</div>
                         <div class="icons icons-duo">
                             <i class="icon icon-pencil" ng-click="selectSplit(split, treatedAsNum(selectedNode.featureChildren))"></i>
