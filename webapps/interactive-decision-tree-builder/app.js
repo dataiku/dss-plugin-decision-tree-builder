@@ -19,9 +19,9 @@
             if ($scope.config.newTree === newTree) return;
 
             $scope.config.newTree = newTree;
+            delete $scope.config.target;
             if (newTree) {
                 delete $scope.config.file;
-                delete $scope.config.target;
 
                 $scope.config.sampleMethod = "head";
                 $scope.config.sampleSize = 10000;
@@ -67,6 +67,7 @@
 
         const featuresPerDataset = {};
         $scope.onDatasetChange = function(nv) {
+            delete $scope.config.target;
             if (!featuresPerDataset[nv]) {
                 $scope.loadingLandingPage = true;
                 $http.get(getWebAppBackendUrl("get-features/" + nv))
