@@ -1,5 +1,6 @@
 <div class="header header-split-edit">
-    <div class="header-feature-desc dku-title" ng-class="{'with-radio': treatedAsNum(selectedNode.featureChildren)}">
+    <div class="header-feature-desc dku-title"
+         ng-class="{'with-radio': features[selectedNode.featureChildren].hasOwnProperty('mean')}">
         <i class="icon-font" ng-show="!treatedAsNum(selectedNode.featureChildren)"></i>
         <div class="numerical" ng-show="treatedAsNum(selectedNode.featureChildren)">#</div>
         <div class="ellipsed-text long-text" title="{{selectedNode.featureChildren}}">
