@@ -404,9 +404,10 @@ class InteractiveTree(Tree):
                 if col_name not in feature_dict:
                     feature_dict[col_name] = {"nr_uses": 0}
                 col = df.loc[:, col_name]
-                if pd.api.types.is_numeric_dtype(col) and col.nunique() > 10:
+                if pd.api.types.is_numeric_dtype(col):
                     feature_dict[col_name]["mean"] = col.mean()
-                    numerical_feature_set.add(col_name)
+                    if col.nunique() > 10:
+                        numerical_feature_set.add(col_name)
                 else:
                     feature_dict[col_name].pop("mean", None)
                     if col.dtype == "bool":
