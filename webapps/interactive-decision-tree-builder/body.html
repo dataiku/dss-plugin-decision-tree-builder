@@ -13,7 +13,9 @@
     <link rel="stylesheet" href="/static/public/styles/1.0.0/variables.css" />
     <meta charset="UTF-8"/>
 </head>
-<body ng-app="idtb" ng-controller="IdtbController" ng-click="$broadcast('closeDropdowns', $event.target)" ng-keyup="$broadcast('closeDropdowns')">
-    <div ng-class="{'create': template == 'create'}"
+<body ng-app="idtb" ng-controller="IdtbController"
+      ng-click="$broadcast('closeDropdowns', $event.target)"
+      ng-keyup="($event.keyCode === 27) && $broadcast('closeDropdowns')">
+    <div id="webapp-main" ng-class="{'create': template == 'create'}"
         ng-include="template == 'create' ? '/plugins/decision-tree-builder/resource/templates/create.html' : '/plugins/decision-tree-builder/resource/templates/edit.html'"></div>
 </body>

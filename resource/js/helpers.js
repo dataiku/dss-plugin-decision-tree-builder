@@ -55,75 +55,44 @@ app.directive("spinner", function () {
     }
 });
 
-app.service("ModalService", function() {
-    const remove = function(config) {
-        return function(event) {
-            if (event && !event.target.className.includes("modal-background")) return false;
-            for (const key in config) {
-                delete config[key];
-            }
-            return true;
-        }
-    }
-    return {
-        create: function(config) {
-            return {
-                confirm: function(msg, title, confirmAction) {
-                    Object.assign(config, {
-                        type: "confirm",
-                        msg: msg,
-                        title: title,
-                        confirmAction: confirmAction
-                    });
-                },
-                error: function(msg) {
-                    Object.assign(config, {
-                        type: "error",
-                        msg: msg,
-                        title: "Backend error"
-                    });
-                },
-                alert: function(msg, title) {
-                    Object.assign(config, {
-                        type: "alert",
-                        msg: msg,
-                        title: title
-                    });
-                },
-                prompt: function(inputLabel, confirmAction, res, title, msg, attrs) {
-                    Object.assign(config, {
-                        type: "prompt",
-                        inputLabel: inputLabel,
-                        promptResult: res,
-                        title: title,
-                        msg: msg,
-                        conditions: attrs,
-                        confirmAction: function() {
-                            confirmAction(config.promptResult);
-                        }
-                    });
-                }
-            };
-        },
-        remove: remove
-    }
-});
+app.service("ModalService", function($compile, $http) {
+    const DEFAULT_MODAL_TEMPLATE = "/plugins/decision-tree-builder/resource/templates/modal.html";
 
-app.directive("modalBackground", function($compile) {
-    return {
-        scope: true,
-        restrict: "C",
-        templateUrl: "/plugins/decision-tree-builder/resource/templates/modal.html",
-        link: function(scope, element) {
-            if (scope.modal.conditions) {
+    function create(scope, config, templateUrl=DEFAULT_MODAL_TEMPLATE) {
+        $http.get(templateUrl).then(function(response) {
+            const template = response.data;
+            const newScope = scope.$new();
+            const element = $compile(template)(newScope);
+
+            angular.extend(newScope, config);
+
+            newScope.close = function(event) {
+                if (event && !event.target.className.includes("modal-background")) return;
+                element.remove();
+                newScope.$emit("closeModal");
+            };
+
+            if (newScope.promptConfig && newScope.promptConfig.conditions) {
                 const inputField = element.find("input");
-                for (const attr in scope.modal.conditions) {
-                    inputField.attr(attr, scope.modal.conditions[attr]);
+                for (const attr in newScope.promptConfig.conditions) {
+                    inputField.attr(attr, newScope.promptConfig.conditions[attr]);
                 }
-                $compile(inputField)(scope);
+                $compile(inputField)(newScope);
             }
-        }
-    }
+
+            angular.element("body").append(element);
+            element.focus();
+        });
+    };
+    return {
+        createBackendErrorModal: function(scope, errorMsg) {
+            create(scope, {
+                title: 'Backend error',
+                msgConfig: { error: true, msg: errorMsg }
+            }, DEFAULT_MODAL_TEMPLATE);
+        },
+        create
+    };
 });
 
 app.directive('tooltip', function() {
@@ -210,12 +179,12 @@ app.directive("customDropdown", function() {
             display: '=?'
         },
         restrict: 'A',
-        templateUrl:'/plugins/model-stress-test/resource/templates/custom-dropdown.html',
+        templateUrl:'/plugins/decision-tree-builder/resource/templates/custom-dropdown.html',
         link: function(scope, elem, attrs) {
             const VALIDITY = "dropdown-not-empty" + (attrs.id ? ("__" + attrs.id) : "");
             function setValidity() {
                 if (!scope.form) return;
-                scope.form.$setValidity(VALIDITY, !!scope.item || !!(scope.items || {}).size);
+                scope.form.$setValidity(VALIDITY, scope.item != null || !!(scope.items || {}).size);
             }
             setValidity();
 
@@ -257,7 +226,7 @@ app.directive("customDropdown", function() {
                     if (!(scope.items || {}).size) return "Select " + scope.itemName + "s";
                     return scope.items.size + " " + scope.itemName + (scope.items.size > 1 ? "s" : "");
                 }
-                if (scope.item === null) return "Select a " + scope.itemName;
+                if (scope.item == null) return "Select a " + scope.itemName;
                 return scope.display(scope.item);
             };
 

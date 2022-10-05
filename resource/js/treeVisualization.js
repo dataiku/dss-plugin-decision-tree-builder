@@ -1,5 +1,5 @@
 'use strict';
-app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
+app.service("TreeInteractions", function($http, $timeout, $compile, ModalService, Format) {
     let svg, tree, currentPath = new Set();
     const side = 30, maxZoom = 3;
 
@@ -193,7 +193,7 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
                     scope.loadingHistogram = false;
                 }, function(e) {
                     scope.loadingHistogram = false;
-                    scope.createModal.error(e.data);
+                    ModalService.createBackendErrorModal(scope, e.data);
                 });
             }
         } else {
@@ -366,7 +366,7 @@ app.service("TreeInteractions", function($http, $timeout,  $compile, Format) {
 app.service("SunburstInteractions", function(Format, TreeInteractions) {
     // Breadcrumb dimensions: width, height, spacing, width of tip/tail.
     const b = {
-            w: 590, h: 20, s: 3, t: 10
+        w: 590, h: 20, s: 3, t: 10
     };
 
     const initializeBreadcrumbTrail = function() {
@@ -597,13 +597,10 @@ app.service("SunburstInteractions", function(Format, TreeInteractions) {
         currentScale = colors;
     }
 
-    return {
-        createSun: createSun,
-        updateColors: updateColors
-    }
+    return { createSun, updateColors };
 });
 
-app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInteractions, SunburstInteractions, Format) {
+app.controller("_TreeEditController", function($scope, $http, ModalService, TreeInteractions, SunburstInteractions, Format) {
     $scope.search = {
         feature: '',
         catSplitValue: ''
@@ -634,12 +631,10 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
             $scope.colors[value] = $scope.selectedScale[key%$scope.selectedScale.length];
         });
 
-        if (!$scope.selectedNode) return;
-
         if ($scope.template === "sun") {
             SunburstInteractions.updateColors($scope.colors);
-        }
-        else {
+        } else {
+            if (!$scope.selectedNode) return;
             TreeInteractions.select($scope.selectedNode.id, $scope, false, true);
             if ($scope.template === "viz") {
                 TreeInteractions.updateTooltipColors($scope.colors);
@@ -673,15 +668,20 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
     };
 
     $scope.save = function() {
-        $scope.createModal.prompt(
-            "Filename",
-            (filename) => save(filename),
-            $scope.config.file,
-            "Save as...",
-            undefined,
-            {"type": "text", "ng-pattern": "/^[/_A-Za-z0-9-]+$/", "placeholder": "Letters, numbers, /, -, _"}
-        );
-    },
+        ModalService.create($scope, {
+            title: "Save as",
+            confirmAction: (fileName) => save(fileName),
+            promptConfig: {
+                result: $scope.config.file,
+                label: "Filename",
+                conditions: {
+                    type: "text",
+                    "ng-pattern": "/^[/_A-Za-z0-9-]+$/",
+                    placeholder: "Letters, numbers, /, -, _"
+                }
+            }
+        });
+    };
 
     $scope.saveShortcut = function(event) {
         if (event.key === 's' && (event.metaKey || event.ctrlKey)) {
@@ -696,15 +696,20 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
         .then(function() {
             $scope.isSaved = true;
         }, function(e) {
-            $scope.createModal.error(e.data);
+            ModalService.createBackendErrorModal($scope, e.data);
         });
     };
 
     $scope.close = function(force) {
         if (!$scope.isSaved && !force) {
-            $scope.createModal.confirm("Are you sure you want to exit without saving? All unsaved changes will be lost.",
-                                        "Exit without saving",
-                                        () => $scope.close(true))
+            ModalService.create($scope, {
+                title: "Exit without saving",
+                confirmAction: () => $scope.close(true),
+                isDangerousAction: true,
+                msgConfig: {
+                    msg: "Are you sure you want to exit without saving? All unsaved changes will be lost."
+                }
+            });
             return;
         }
         delete $scope.config.file;
@@ -755,7 +760,7 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
                 label.text($scope.selectedNode.label ? Format.ellipsis($scope.selectedNode.label, 30) : null);
             }
         }, function(e) {
-            $scope.createModal.error(e.data);
+            ModalService.createBackendErrorModal($scope, e.data);
         });
     };
 
@@ -786,7 +791,7 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
                 $scope.createSplit($scope.treatedAsNum(feature));
             }, function(e) {
                 $scope.loadingHistogram = false;
-                $scope.createModal.error(e.data);
+                ModalService.createBackendErrorModal($scope, e.data);
             });
         } else {
             $scope.createSplit($scope.treatedAsNum(feature));
@@ -940,7 +945,7 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
             $scope.loadingHistogram = false;
         }, function(e) {
             $scope.loadingHistogram = false;
-            $scope.createModal.error(e.data);
+            ModalService.createBackendErrorModal($scope, e.data);
         });
     };
 
@@ -961,13 +966,17 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
     };
 
     $scope.autosplit = function() {
-        $scope.createModal.prompt("Maximum number of splits",
-                                (maxSplits) => autosplit(parseFloat(maxSplits)),
-                                undefined,
-                                "Auto-create splits",
-                                "This will automatically create some splits on the currently selected node",
-                                {min: 1, type: "number", step: 1}
-        );
+        ModalService.create($scope, {
+            title: "Auto-create splits",
+            confirmAction: (maxSplits) => autosplit(parseFloat(maxSplits)),
+            msgConfig: {
+                msg: "This will automatically create some splits on the currently selected node"
+            },
+            promptConfig: {
+                label: "Maximum number of splits",
+                conditions: {min: 1, type: "number", step: 1}
+            }
+        });
     };
 
     const autosplit = function(maxSplits) {
@@ -980,7 +989,12 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
             $scope.selectedNode.children_ids = $scope.treeData[$scope.selectedNode.id].children_ids;
             if (!$scope.selectedNode.children_ids.length) {
                 delete $scope.selectedNode.featureChildren;
-                $scope.createModal.alert("No split could be formed", "Auto-creation: no split");
+                ModalService.create($scope, {
+                    title: "Auto-creation: no split",
+                    msgConfig: {
+                        msg: "No split could be formed"
+                    }
+                });
                 $scope.loadingTree = false;
                 return;
             }
@@ -1007,7 +1021,7 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
             $scope.loadingTree = false;
         }, function(e) {
             $scope.loadingTree = false;
-            $scope.createModal.error(e.data);
+            ModalService.createBackendErrorModal($scope, e.data);
         });
     };
 
@@ -1021,7 +1035,12 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
                     const msg = "Creating a split at " + split.value + " will affect downstream parts of your decision tree.\
                         \nYou will lose all branches below the node '"
                         + TreeInteractions.decisionRule(nodeToBeSplit, true) + "'";
-                    $scope.createModal.confirm(msg, "Split creation: warning", () => add(split, feature, nodeToBeSplit));
+                    ModalService.create($scope, {
+                        title: "Split creation: warning",
+                        confirmAction: () => add(split, feature, nodeToBeSplit),
+                        isDangerousAction: true,
+                        msgConfig: { msg }
+                    });
                     return;
                 }
             }
@@ -1068,7 +1087,7 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
             }
         }, function(e) {
             $scope.loadingTree = false;
-            $scope.createModal.error(e.data);
+            ModalService.createBackendErrorModal($scope, e.data);
         });
     };
 
@@ -1092,7 +1111,12 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
                         askForConfirmation = true;
                     }
                     if (askForConfirmation) {
-                        $scope.createModal.confirm(msg, "Split edit: warning", () => update(split, feature, nodeToBeSplit, nodeToBeMoved));
+                        ModalService.create($scope, {
+                            title: "Split edit: warning",
+                            confirmAction: () => update(split, feature, nodeToBeSplit, nodeToBeMoved),
+                            isDangerousAction: true,
+                            msgConfig: { msg }
+                        });
                         return;
                     }
                 }
@@ -1129,7 +1153,7 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
             }
         }, function(e) {
             $scope.loadingTree = false;
-            $scope.createModal.error(e.data);
+            ModalService.createBackendErrorModal($scope, e.data);
         });
     };
 
@@ -1151,11 +1175,21 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
                     + TreeInteractions.decisionRule($scope.treeData[split.left], true) + "' and '"
                     + TreeInteractions.decisionRule($scope.treeData[split.right], true) +  "' and all the branches and nodes below them";
         }
-        $scope.createModal.confirm(msg, "Delete a split", () => del(split, feature));
+        ModalService.create($scope, {
+            title: "Delete a split",
+            confirmAction: () => del(split, feature),
+            isDangerousAction: true,
+            msgConfig: { msg }
+        });
     };
 
     $scope.confirmDeleteAll = function() {
-        $scope.createModal.confirm("This will delete all the branches and nodes below the currently selected node", "Delete all splits", deleteAllSplits);
+        ModalService.create($scope, {
+            title: "Delete all splits",
+            confirmAction: deleteAllSplits,
+            isDangerousAction: true,
+            msgConfig: { msg: "This will delete all the branches and nodes below the currently selected node" }
+        });
     };
 
     function del(split, feature) {
@@ -1180,7 +1214,7 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
             }
         }, function(e) {
             $scope.loadingTree = false;
-            $scope.createModal.error(e.data);
+            ModalService.createBackendErrorModal($scope, e.data);
         });
     }
 
@@ -1197,7 +1231,7 @@ app.controller("_TreeEditController", function($scope, $http, $timeout, TreeInte
             TreeInteractions.select($scope.selectedNode.id, $scope);
         }, function(e) {
             $scope.loadingTree = false;
-            $scope.createModal.error(e.data);
+            ModalService.createBackendErrorModal($scope, e.data);
         });
     }
 });

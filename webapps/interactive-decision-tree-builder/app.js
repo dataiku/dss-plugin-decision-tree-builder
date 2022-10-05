@@ -1,105 +1,118 @@
 (function() {
     'use strict';
 
-    app.controller("IdtbController", function($scope, ModalService) {
+    app.controller("IdtbController", function($scope) {
         dataiku.checkWebAppParameters();
         $scope.template = "create";
         $scope.setTemplate = function(newTemplate) {
             $scope.template = newTemplate;
         }
         $scope.config = {};
-        $scope.modal = {};
-        $scope.removeModal = function(event) {
-            if (ModalService.remove($scope.modal)(event)) {
-                angular.element(".template").focus();
-            }
-        };
-        $scope.createModal = ModalService.create($scope.modal);
+
+        $scope.$on("closeModal", function() {
+            angular.element("#webapp-main").focus();
+        });
     });
 
-    app.controller("CreateOrLoadController", function($scope, $http) {
-        $scope.config.sampleMethod = "head";
-        $scope.config.newTree = true;
-        $scope.$watch("config.newTree", function(nv) {
-            if (nv) {
+    app.controller("CreateOrLoadController", function($scope, $http, ModalService) {
+        $scope.onTreeSourceChange = function(newTree) {
+            if ($scope.config.newTree === newTree) return;
+
+            $scope.config.newTree = newTree;
+            delete $scope.config.target;
+            if (newTree) {
                 delete $scope.config.file;
-                delete $scope.config.target;
+
                 $scope.config.sampleMethod = "head";
                 $scope.config.sampleSize = 10000;
             } else {
                 delete $scope.config.dataset;
+                delete $scope.features;
                 if (!$scope.files) {
+                    $scope.loadingLandingPage = true;
                     $http.get(getWebAppBackendUrl("get-files"))
                     .then(function(response) {
+                        $scope.loadingLandingPage = false;
                         $scope.files = response.data.files;
                     }, function(e) {
-                        $scope.createModal.error(e.data);
+                        $scope.loadingLandingPage = false;
+                        ModalService.createBackendErrorModal($scope, e.data);
                     });
                 }
             }
-        });
+        };
+        $scope.onTreeSourceChange(true)
 
-        $scope.$watch("config.sampleMethod", function(nv, ov) {
-            if(nv) {
-                if (!ov && !$scope.config.hasOwnProperty("sampleSize")) {
-                    $scope.config.sampleSize = 10000;
-                }
-            } else {
+        $scope.onSampleMethodChange = function(nv, ov) {
+            if (!nv) {
                 delete $scope.config.sampleSize;
+                return;
             }
-        });
 
+            if (!ov && !$scope.config.hasOwnProperty("sampleSize")) {
+                $scope.config.sampleSize = 10000;
+            }
+
+        };
+
+        $scope.loadingLandingPage = true;
         $http.get(getWebAppBackendUrl("get-datasets"))
         .then(function(response) {
+            $scope.loadingLandingPage = false;
             $scope.datasets = response.data.datasets;
         }, function(e) {
-            $scope.createModal.error(e.data);
+            $scope.loadingLandingPage = false;
+            ModalService.createBackendErrorModal($scope, e.data);
         });
 
         const featuresPerDataset = {};
-        $scope.$watch("config.dataset", function(nv) {
-            if (nv) {
-                if (!featuresPerDataset[nv]) {
-                    $http.get(getWebAppBackendUrl("get-features/"+$scope.config.dataset))
-                    .then(function(response) {
-                        $scope.features = response.data.features;
-                        featuresPerDataset[nv] = response.data.features;
-                    }, function(e) {
-                        delete $scope.features;
-                        $scope.createModal.error(e.data);
-                    });
-                } else {
-                    $scope.features = featuresPerDataset[nv];
-                }
+        $scope.onDatasetChange = function(nv) {
+            delete $scope.config.target;
+            if (!featuresPerDataset[nv]) {
+                $scope.loadingLandingPage = true;
+                $http.get(getWebAppBackendUrl("get-features/" + nv))
+                .then(function(response) {
+                    $scope.loadingLandingPage = false;
+                    $scope.features = response.data.features;
+                    featuresPerDataset[nv] = response.data.features;
+                }, function(e) {
+                    delete $scope.features;
+                    $scope.loadingLandingPage = false;
+                    ModalService.createBackendErrorModal($scope, e.data);
+                });
             } else {
-                delete $scope.config.target;
+                $scope.features = featuresPerDataset[nv];
             }
-        });
+        };
 
         const fileConfig = {};
-        $scope.$watch("config.file", function(nv) {
-            if (nv) {
-                if (!fileConfig[nv]) {
-                    $http.get(getWebAppBackendUrl("get-config/"+encodeURIComponent(nv)))
-                    .then(function(response) {
-                        fileConfig[nv] = response.data;
-                        if (!fileConfig[nv].sampleSize) {
-                            delete fileConfig[nv].sampleMethod;
-                        }
-                        $scope.config.sampleMethod = fileConfig[nv].sampleMethod;
-                        $scope.config.sampleSize = fileConfig[nv].sampleSize;
-                        $scope.config.target = fileConfig[nv].target;
-                    }, function(e) {
-                        delete $scope.target;
-                        $scope.createModal.error(e.data);
-                    });
-                } else {
+        $scope.onFileChange = function(nv) {
+            if (!nv) return;
+
+            if (!fileConfig[nv]) {
+                $scope.loadingLandingPage = true;
+                $http.get(getWebAppBackendUrl("get-config/"+encodeURIComponent(nv)))
+                .then(function(response) {
+                    $scope.loadingLandingPage = false;
+
+                    fileConfig[nv] = response.data;
+                    if (!fileConfig[nv].sampleSize) {
+                        delete fileConfig[nv].sampleMethod;
+                    }
                     $scope.config.sampleMethod = fileConfig[nv].sampleMethod;
                     $scope.config.sampleSize = fileConfig[nv].sampleSize;
                     $scope.config.target = fileConfig[nv].target;
-                }
+                }, function(e) {
+                    $scope.loadingLandingPage = false;
+                    delete $scope.target;
+                    ModalService.createBackendErrorModal($scope, e.data);
+                });
+            } else {
+                $scope.config.sampleMethod = fileConfig[nv].sampleMethod;
+                $scope.config.sampleSize = fileConfig[nv].sampleSize;
+                $scope.config.target = fileConfig[nv].target;
             }
-        });
+        };
 
         $scope.edit = function() {
             $scope.setTemplate('edit');
@@ -111,7 +124,8 @@
         };
     });
 
-    app.controller("WebappTreeEditController", function($scope, $http, $timeout, $controller, TreeInteractions, SunburstInteractions) {
+    app.controller("WebappTreeEditController", function($scope, $http, $timeout, $controller,
+        TreeInteractions, SunburstInteractions, ModalService) {
         $controller("_TreeEditController", {$scope});
 
         $scope.$watch("template", function(nv, ov) {
@@ -180,7 +194,7 @@
                 initTree(response.data);
             }, function(e) {
                 $scope.loadingTree = false;
-                $scope.createModal.error(e.data);
+                ModalService.createBackendErrorModal($scope, e.data);
             });
         }
 
@@ -194,7 +208,7 @@
                 $scope.recreateSplits(Object.values(response.data.nodes));
             }, function(e) {
                 $scope.loadingTree = false;
-                $scope.createModal.error(e.data);
+                ModalService.createBackendErrorModal($scope, e.data);
             });
         }
 
