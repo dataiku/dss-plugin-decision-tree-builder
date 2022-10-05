@@ -29,10 +29,13 @@
                 delete $scope.config.dataset;
                 delete $scope.features;
                 if (!$scope.files) {
+                    $scope.loadingLandingPage = true;
                     $http.get(getWebAppBackendUrl("get-files"))
                     .then(function(response) {
+                        $scope.loadingLandingPage = false;
                         $scope.files = response.data.files;
                     }, function(e) {
+                        $scope.loadingLandingPage = false;
                         ModalService.createBackendErrorModal($scope, e.data);
                     });
                 }
@@ -52,22 +55,28 @@
 
         };
 
+        $scope.loadingLandingPage = true;
         $http.get(getWebAppBackendUrl("get-datasets"))
         .then(function(response) {
+            $scope.loadingLandingPage = false;
             $scope.datasets = response.data.datasets;
         }, function(e) {
+            $scope.loadingLandingPage = false;
             ModalService.createBackendErrorModal($scope, e.data);
         });
 
         const featuresPerDataset = {};
         $scope.onDatasetChange = function(nv) {
             if (!featuresPerDataset[nv]) {
+                $scope.loadingLandingPage = true;
                 $http.get(getWebAppBackendUrl("get-features/" + nv))
                 .then(function(response) {
+                    $scope.loadingLandingPage = false;
                     $scope.features = response.data.features;
                     featuresPerDataset[nv] = response.data.features;
                 }, function(e) {
                     delete $scope.features;
+                    $scope.loadingLandingPage = false;
                     ModalService.createBackendErrorModal($scope, e.data);
                 });
             } else {
@@ -80,8 +89,11 @@
             if (!nv) return;
 
             if (!fileConfig[nv]) {
+                $scope.loadingLandingPage = true;
                 $http.get(getWebAppBackendUrl("get-config/"+encodeURIComponent(nv)))
                 .then(function(response) {
+                    $scope.loadingLandingPage = false;
+
                     fileConfig[nv] = response.data;
                     if (!fileConfig[nv].sampleSize) {
                         delete fileConfig[nv].sampleMethod;
@@ -90,6 +102,7 @@
                     $scope.config.sampleSize = fileConfig[nv].sampleSize;
                     $scope.config.target = fileConfig[nv].target;
                 }, function(e) {
+                    $scope.loadingLandingPage = false;
                     delete $scope.target;
                     ModalService.createBackendErrorModal($scope, e.data);
                 });
