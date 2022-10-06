@@ -1069,13 +1069,13 @@ path.selected, path.hovered {
     padding: 0 16px 16px 16px;
     overflow: auto;
     max-height: 250px;
-    white-space: pre-line;
     text-align: justify;
     font-size: 14px;
 }
 
 .dku-modal-body--error {
     color: var(--error-red);
+    white-space: pre-line;
 }
 
 .dku-modal-form {
