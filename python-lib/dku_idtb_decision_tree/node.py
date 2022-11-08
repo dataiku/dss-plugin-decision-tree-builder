@@ -105,7 +105,7 @@ class NumericalNode(Node):
             rule += "{} ≤ ".format(self.beginning)
         rule += self.feature
         if self.end:
-            rule += "< {}".format(self.end)
+            rule += " < {}".format(self.end)
         return rule
 
     def apply_filter(self, df, mean):

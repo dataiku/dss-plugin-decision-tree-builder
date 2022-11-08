@@ -34,7 +34,7 @@ def get_scored_df_schema(tree, schema, columns, output_probabilities, is_evaluat
     if check_prediction:
         _add_column('prediction_correct', 'boolean', schema, columns)
     _add_column('decision_rule', 'array', schema, columns)
-    _add_column('node_id', 'int', schema, columns)
+    _add_column('leaf_id', 'int', schema, columns)
     _add_column('label', 'string', schema, columns)
     return schema
 
@@ -75,9 +75,8 @@ def add_scoring_columns(tree, df, output_probabilities, is_evaluation=False, che
             df.loc[filtered_df_indices, "prediction"] = leaf.prediction
             if check_prediction:
                 df.loc[filtered_df_indices, "prediction_correct"] = filtered_df[tree.target] == leaf.prediction
-            df.loc[label_indices, "label"] = leaf.label
 
         filtered_df = tree.get_filtered_df(leaf, df)
         df.loc[filtered_df.index, "decision_rule"] = safe_str(tree.get_decision_rule(leaf_id))
-        df.loc[filtered_df.index, "node_id"] = leaf_id
+        df.loc[filtered_df.index, "leaf_id"] = leaf_id
         df.loc[filtered_df.index, "label"] = leaf.label
