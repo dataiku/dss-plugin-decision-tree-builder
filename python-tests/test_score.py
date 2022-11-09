@@ -79,47 +79,77 @@ def get_input_df():
 def test_score():
 	df = get_input_df()
 	add_scoring_columns(tree, df, True)
-	expected_df = pd.DataFrame([[.2, "u", "A", .8, .2, "A", "hello there"],
-								[7, pd.np.nan, "B", pd.np.nan, pd.np.nan, pd.np.nan, "general Kenobi"],
-								[4, "u", "A", .25, .75, "B", None],
-								[3, "v", "A", .8, .2, "A", "hello there"],
-								[pd.np.nan, "u", "C", .8, .2, "A", "hello there"]], columns=("num", "cat", "target", "proba_A", "proba_B", "prediction", "label"))
-	assert df.equals(expected_df)
+	expected_df = pd.DataFrame([
+		[.2, "u", "A", .8, .2, "A", str(["num < 4"]), 1.0, "hello there"],
+		[7, pd.np.nan, "B", pd.np.nan, pd.np.nan, pd.np.nan, str(["4 ≤ num", "cat not in {}".format(["u", "v"])]), 4.0, "general Kenobi"],
+		[4, "u", "A", .25, .75, "B", str(["4 ≤ num", "cat in {}".format(["u", "v"])]), 3.0, None],
+		[3, "v", "A", .8, .2, "A", str(["num < 4"]), 1.0, "hello there"],
+		[pd.np.nan, "u", "C", .8, .2, "A", str(["num < 4"]), 1.0, "hello there"]
+	], columns=("num", "cat", "target", "proba_A", "proba_B", "prediction", "decision_rule", "leaf_id", "label"))
+	pd.testing.assert_frame_equal(df, expected_df)
 
 	df = get_input_df()
 	add_scoring_columns(tree, df, False, True, False)
-	expected_df = pd.DataFrame([[.2, "u", "A", "A", "hello there"],
-								[7, pd.np.nan, "B", pd.np.nan, "general Kenobi"],
-								[4, "u", "A", "B", None],
-								[3, "v", "A", "A", "hello there"],
-								[pd.np.nan, "u", "C", pd.np.nan, "hello there"]], columns=("num", "cat", "target", "prediction", "label"))
-	assert df.equals(expected_df)
+	expected_df = pd.DataFrame([
+		[.2, "u", "A", "A", str(["num < 4"]), 1.0, "hello there"],
+		[7, pd.np.nan, "B", pd.np.nan, str(["4 ≤ num", "cat not in {}".format(["u", "v"])]), 4.0, "general Kenobi"],
+		[4, "u", "A", "B", str(["4 ≤ num", "cat in {}".format(["u", "v"])]), 3.0, None],
+		[3, "v", "A", "A", str(["num < 4"]), 1.0, "hello there"],
+		[pd.np.nan, "u", "C", pd.np.nan, str(["num < 4"]), 1.0, "hello there"]
+	], columns=("num", "cat", "target", "prediction", "decision_rule", "leaf_id", "label"))
+	pd.testing.assert_frame_equal(df, expected_df)
 
 	df = get_input_df()
 	add_scoring_columns(tree, df, False, True, True)
-	expected_df = pd.DataFrame([[.2, "u", "A", "A", True, "hello there"],
-								[7, pd.np.nan, "B", pd.np.nan, pd.np.nan, "general Kenobi"],
-								[4, "u", "A", "B", False, None],
-								[3, "v", "A", "A", True, "hello there"],
-								[pd.np.nan, "u", "C", pd.np.nan, pd.np.nan, "hello there"]], columns=("num", "cat", "target", "prediction", "prediction_correct", "label"))
-	assert df.equals(expected_df)
+	expected_df = pd.DataFrame([
+		[.2, "u", "A", "A", True, str(["num < 4"]), 1.0, "hello there"],
+		[7, pd.np.nan, "B", pd.np.nan, pd.np.nan, str(["4 ≤ num", "cat not in {}".format(["u", "v"])]), 4.0, "general Kenobi"],
+		[4, "u", "A", "B", False, str(["4 ≤ num", "cat in {}".format(["u", "v"])]), 3.0, None],
+		[3, "v", "A", "A", True, str(["num < 4"]), 1.0, "hello there"],
+		[pd.np.nan, "u", "C", pd.np.nan, pd.np.nan, str(["num < 4"]), 1.0, "hello there"]
+	], columns=("num", "cat", "target", "prediction", "prediction_correct", "decision_rule", "leaf_id", "label"))
+	pd.testing.assert_frame_equal(df, expected_df)
 
 def get_input_schema():
 	return [{"type": "double", "name": "num"}, {"type": "string", "name": "cat"}, {"type": "string", "name": "target"}]
 
 def test_scored_df_schema():
 	schema = get_scored_df_schema(tree, get_input_schema(), None, True)
-	assert schema == [{"type": "double", "name": "num"}, {"type": "string", "name": "cat"}, {"type": "string", "name": "target"},
-					{"type": "double", "name": "proba_A"}, {"type": "double", "name": "proba_B"}, {"type": "string", "name": "prediction"}, {"type": "string", "name": "label"}]
+	expected_schema = [
+		{"type": "double", "name": "num"},
+		{"type": "string", "name": "cat"},
+		{"type": "string", "name": "target"},
+		{"type": "double", "name": "proba_A"},
+		{"type": "double", "name": "proba_B"},
+		{"type": "string", "name": "prediction"},
+		{"type": "array", "name": "decision_rule"},
+		{"type": "int", "name": "leaf_id"},
+		{"type": "string", "name": "label"}
+	]
+	assert schema == expected_schema
 	columns = []
 	schema = get_scored_df_schema(tree, get_input_schema(), columns, False, True, False)
-	assert schema == [{"type": "string", "name": "prediction"}, {"type": "string", "name": "label"}]
-	assert columns == ["prediction", "label"]
+	expected_schema = [
+		{"type": "string", "name": "prediction"},
+		{"type": "array", "name": "decision_rule"},
+		{"type": "int", "name": "leaf_id"},
+		{"type": "string", "name": "label"}
+	]
+	assert schema == expected_schema
+	assert columns == ["prediction", "decision_rule", "leaf_id", "label"]
 
 	columns = ["num"]
 	schema = get_scored_df_schema(tree, get_input_schema(), columns, False, True, True)
-	assert schema == [{"type": "double", "name": "num"}, {"type": "string", "name": "prediction"}, {"type": "boolean", "name": "prediction_correct"}, {"type": "string", "name": "label"}]
-	assert columns == ["num", "prediction", "prediction_correct", "label"]
+	expected_schema = [
+		{"type": "double", "name": "num"},
+		{"type": "string", "name": "prediction"},
+		{"type": "boolean", "name": "prediction_correct"},
+		{"type": "array", "name": "decision_rule"},
+		{"type": "int", "name": "leaf_id"},
+		{"type": "string", "name": "label"}
+	]
+	assert schema == expected_schema
+	assert columns == ["num", "prediction", "prediction_correct", "decision_rule", "leaf_id", "label"]
 
 	schema_missing_feature = [{"type": "double", "name": "num"}, {"type": "string", "name": "target"}]
 	schema_missing_target = [{"type": "double", "name": "num"}, {"type": "string", "name": "cat"}]

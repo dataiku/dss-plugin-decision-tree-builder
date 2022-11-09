@@ -45,6 +45,9 @@ class Node(object):
     def get_type(self):
         raise NotImplementedError
 
+    def get_decision_rule(self):
+        raise NotImplementedError
+
     def rebuild(self, prediction, samples, probabilities):
         self.prediction = prediction
         self.samples = samples
@@ -66,6 +69,11 @@ class CategoricalNode(Node):
 
     def get_type(self):
         return Node.TYPES.CAT
+
+    def get_decision_rule(self):
+        return "{feature} {negation}in {values}".format(
+            feature=self.feature, negation="not " if self.others else "", values=self.values
+        )
 
     def apply_filter(self, df):
         if self.others:
@@ -90,6 +98,15 @@ class NumericalNode(Node):
 
     def get_type(self):
         return Node.TYPES.NUM
+
+    def get_decision_rule(self):
+        rule = ""
+        if self.beginning:
+            rule += "{} ≤ ".format(self.beginning)
+        rule += self.feature
+        if self.end:
+            rule += " < {}".format(self.end)
+        return rule
 
     def apply_filter(self, df, mean):
         if self.beginning is not None:

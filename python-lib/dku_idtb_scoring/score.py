@@ -18,25 +18,24 @@ def update_input_schema(input_schema, columns):
             new_input_schema.append(column)
     return new_input_schema
 
+def _add_column(name, type, schema, columns=None):
+    schema.append({'type': type, 'name': name})
+    if columns is not None:
+        columns.append(name)
+
 def get_scored_df_schema(tree, schema, columns, output_probabilities, is_evaluation=False, check_prediction=False):
     check_input_schema(tree, set(column["name"] for column in schema), is_evaluation)
     if columns is not None:
         schema = update_input_schema(schema, columns)
     if output_probabilities:
         for value in tree.target_values:
-            schema.append({'type': 'double', 'name': "proba_" + safe_str(value)})
-            if columns is not None:
-                columns.append("proba_"+safe_str(value))
-    schema.append({'type': 'string', 'name': 'prediction'})
-    if columns is not None:
-        columns.append("prediction")
+            _add_column('proba_' + safe_str(value), 'double', schema, columns)
+    _add_column('prediction', 'string', schema, columns)
     if check_prediction:
-        schema.append({'type': 'boolean', 'name': 'prediction_correct'})
-        if columns is not None:
-            columns.append("prediction_correct")
-    schema.append({'type': 'string', 'name': 'label'})
-    if columns is not None:
-        columns.append("label")
+        _add_column('prediction_correct', 'boolean', schema, columns)
+    _add_column('decision_rule', 'array', schema, columns)
+    _add_column('leaf_id', 'int', schema, columns)
+    _add_column('label', 'string', schema, columns)
     return schema
 
 def get_metric_df_schema(metrics_dict, metrics, recipe_config):
@@ -76,8 +75,8 @@ def add_scoring_columns(tree, df, output_probabilities, is_evaluation=False, che
             df.loc[filtered_df_indices, "prediction"] = leaf.prediction
             if check_prediction:
                 df.loc[filtered_df_indices, "prediction_correct"] = filtered_df[tree.target] == leaf.prediction
-            df.loc[label_indices, "label"] = leaf.label
 
-        elif leaf.label is not None:
-            filtered_df = tree.get_filtered_df(leaf, df)
-            df.loc[filtered_df.index, "label"] = leaf.label
+        filtered_df = tree.get_filtered_df(leaf, df)
+        df.loc[filtered_df.index, "decision_rule"] = safe_str(tree.get_decision_rule(leaf_id))
+        df.loc[filtered_df.index, "leaf_id"] = leaf_id
+        df.loc[filtered_df.index, "label"] = leaf.label

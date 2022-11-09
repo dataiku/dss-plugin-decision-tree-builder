@@ -83,6 +83,14 @@ class ScoringTree(Tree):
             parent_node.children_ids.append(node.id)
         super(ScoringTree, self).add_node(node)
 
+    def get_decision_rule(self, node_id):
+        rule = deque()
+        while node_id > 0:
+            node = self.get_node(node_id)
+            rule.appendleft(node.get_decision_rule())
+            node_id = node.parent_id
+        return list(rule)
+
 #Used by the webapp
 class InteractiveTree(Tree):
     """
