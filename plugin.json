@@ -1,6 +1,6 @@
 {
   "id" : "decision-tree-builder",
-  "version" : "1.0.6",
+  "version" : "1.0.7",
   "meta" : {
     "label" : "Interactive Decision Tree Builder",
     "description" : "Build and explore decision trees, and use them to score and evaluate data",

@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 1.0.7 (2022-11-10)
+* Webapp: Display node id in node info panel
+* Scoring/Evaluation recipes: Add two columns (one with the decision rule, one with the leaf id)
+
 ## Version 1.0.6 (2022-10-06)
 * Webapp: Many UI improvements
 * Webapp: Allow to treat features as numerical when less than 10 distinct values
