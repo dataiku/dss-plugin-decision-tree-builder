@@ -24,6 +24,5 @@ setuptools.setup(
     install_requires=[
         "scikit-learn>=0.24,<1.0",
         "flask>=1.0,<1.1",
-        "pandas==1.0.5"
         ]
 )
