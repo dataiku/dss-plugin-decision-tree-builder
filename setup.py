@@ -22,7 +22,6 @@ setuptools.setup(
         ],
     python_requires='>=2.7',
     install_requires=[
-        "scikit-learn>=0.24,<1.0",
-        "flask>=1.0,<1.1",
-        ]
+        "scikit-learn>=0.24,<1.0"
+    ]
 )
