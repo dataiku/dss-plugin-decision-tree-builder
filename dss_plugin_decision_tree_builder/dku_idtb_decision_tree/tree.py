@@ -1,5 +1,5 @@
 from dku_idtb_decision_tree.node import Node, CategoricalNode, NumericalNode
-from dku_idtb_compatibility.utils import safe_str
+from dss_plugin_decision_tree_builder.dku_idtb_compatibility.utils import safe_str
 from collections import deque
 import pandas as pd
 

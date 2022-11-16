@@ -1,5 +1,4 @@
-import pandas as pd
-from dku_idtb_compatibility.utils import safe_str
+from dss_plugin_decision_tree_builder.dku_idtb_compatibility.utils import safe_str
 from datetime import datetime
 
 def check_input_schema(tree, col_set, check_prediction):

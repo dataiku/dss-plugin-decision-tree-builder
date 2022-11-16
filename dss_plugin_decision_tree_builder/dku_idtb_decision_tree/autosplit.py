@@ -1,7 +1,6 @@
 import math
 import pandas as pd
 from sklearn.tree import _tree, DecisionTreeClassifier
-from dku_idtb_compatibility.utils import safe_str
 
 def apply_cross_entropy(population):
     return lambda sample: pd.Series(cross_entropy(population, sample), index=sample.index)
