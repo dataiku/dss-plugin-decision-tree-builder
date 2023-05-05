@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 1.1.0 (2023-05-05)
+* Webapp: Fix autosplit (outdated kwarg in sklearn's DecisionTreeClassifier)
+* Evaluation recipe: Fix recipe with multiclass tasks + import error
+* Scoring recipe: Fix recipe for trees with only one node
+
 ## Version 1.0.7 (2022-11-10)
 * Webapp: Display node id in node info panel
 * Scoring/Evaluation recipes: Add two columns (one with the decision rule, one with the leaf id)
