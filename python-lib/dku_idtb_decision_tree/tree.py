@@ -20,6 +20,11 @@ class Tree(object):
         self.leaves.add(node.id)
         self.leaves.discard(node.parent_id)
 
+    def rebuild_node(self, node, dict_node):
+        node.prediction = dict_node["prediction"]
+        node.samples = dict_node["samples"]
+        node.probabilities = dict_node["probabilities"]
+
     def get_filtered_df(self, node, df):
         node_id = node.id
         while node_id > 0:
@@ -39,6 +44,8 @@ class Tree(object):
             treated_as_numerical.intersection_update(numerical_features)
         root_node = Node(0, -1, treated_as_numerical)
         root_node.label = root_node_dict["label"]
+        if rebuild_nodes:
+            self.rebuild_node(root_node, root_node_dict)
         self.add_node(root_node)
 
         ids += root_node_dict["children_ids"]
@@ -66,9 +73,7 @@ class Tree(object):
             node.label = dict_node["label"]
             self.add_node(node)
             if rebuild_nodes:
-                node.rebuild(dict_node["prediction"],
-                            dict_node["samples"],
-                            dict_node["probabilities"])
+                self.rebuild_node(node, dict_node)
             ids += dict_node["children_ids"]
 
 # Used by the recipes
