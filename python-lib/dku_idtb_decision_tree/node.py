@@ -48,11 +48,6 @@ class Node(object):
     def get_decision_rule(self):
         raise NotImplementedError
 
-    def rebuild(self, prediction, samples, probabilities):
-        self.prediction = prediction
-        self.samples = samples
-        self.probabilities = probabilities
-
     def jsonify(self):
         jsonified_node = dict(self.__dict__)
         jsonified_node["treated_as_numerical"] = dict.fromkeys(jsonified_node["treated_as_numerical"])

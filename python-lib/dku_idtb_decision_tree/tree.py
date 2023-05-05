@@ -20,6 +20,11 @@ class Tree(object):
         self.leaves.add(node.id)
         self.leaves.discard(node.parent_id)
 
+    def rebuild_node(self, node, node_dict):
+        node.prediction = node_dict["prediction"]
+        node.samples = node_dict["samples"]
+        node.probabilities = node_dict["probabilities"]
+
     def get_filtered_df(self, node, df):
         node_id = node.id
         while node_id > 0:
@@ -39,37 +44,37 @@ class Tree(object):
             treated_as_numerical.intersection_update(numerical_features)
         root_node = Node(0, -1, treated_as_numerical)
         root_node.label = root_node_dict["label"]
+        if rebuild_nodes:
+            self.rebuild_node(root_node, root_node_dict)
         self.add_node(root_node)
 
         ids += root_node_dict["children_ids"]
 
         while ids:
-            dict_node = nodes[safe_str(ids.popleft())]
-            treated_as_numerical = set(dict_node["treated_as_numerical"])
-            feature = dict_node["feature"]
+            node_dict = nodes[safe_str(ids.popleft())]
+            treated_as_numerical = set(node_dict["treated_as_numerical"])
+            feature = node_dict["feature"]
             if numerical_features is not None:
                 treated_as_numerical.intersection_update(numerical_features)
-            if dict_node.get("values") is not None:
-                node = CategoricalNode(dict_node["id"],
-                                       dict_node["parent_id"],
+            if node_dict.get("values") is not None:
+                node = CategoricalNode(node_dict["id"],
+                                       node_dict["parent_id"],
                                        treated_as_numerical,
                                        feature,
-                                       dict_node["values"],
-                                       others=dict_node["others"])
+                                       node_dict["values"],
+                                       others=node_dict["others"])
             else:
-                node = NumericalNode(dict_node["id"],
-                                    dict_node["parent_id"],
+                node = NumericalNode(node_dict["id"],
+                                    node_dict["parent_id"],
                                     treated_as_numerical,
                                     feature,
-                                    beginning=dict_node.get("beginning", None),
-                                    end=dict_node.get("end", None))
-            node.label = dict_node["label"]
+                                    beginning=node_dict.get("beginning", None),
+                                    end=node_dict.get("end", None))
+            node.label = node_dict["label"]
             self.add_node(node)
             if rebuild_nodes:
-                node.rebuild(dict_node["prediction"],
-                            dict_node["samples"],
-                            dict_node["probabilities"])
-            ids += dict_node["children_ids"]
+                self.rebuild_node(node, node_dict)
+            ids += node_dict["children_ids"]
 
 # Used by the recipes
 class ScoringTree(Tree):

@@ -1,4 +1,3 @@
-import pandas as pd
 from dku_idtb_compatibility.utils import safe_str
 from datetime import datetime
 
@@ -59,7 +58,6 @@ def add_scoring_columns(tree, df, output_probabilities, is_evaluation=False, che
         leaf = tree.get_node(leaf_id)
         if leaf.prediction is not None:
             filtered_df = tree.get_filtered_df(leaf, df)
-            label_indices = filtered_df.index
             if is_evaluation:
                 filtered_df = filtered_df[filtered_df[tree.target].isin(tree.target_values)]
             filtered_df_indices = filtered_df.index
