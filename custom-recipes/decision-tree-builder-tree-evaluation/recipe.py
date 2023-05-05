@@ -3,7 +3,11 @@ from dataiku.customrecipe import get_input_names_for_role, get_output_names_for_
 from dku_idtb_decision_tree.tree import ScoringTree
 from dku_idtb_scoring.score import add_scoring_columns, get_scored_df_schema, get_metric_df_schema
 from dku_idtb_compatibility.utils import safe_str
-from dataiku.doctor.prediction.evaluation_base import compute_binary_classification_metrics
+try:
+    from dataiku.doctor.evaluation.base import compute_binary_classification_metrics
+except AttributeError:
+    # Old import (DSS <= 11.3)
+    from dataiku.doctor.prediction.evaluation_base import compute_binary_classification_metrics
 try:
     from dataiku.doctor.prediction.classification_scoring import MulticlassModelScorer
     compute_multiclass_metrics = MulticlassModelScorer.compute_multiclass_metrics
