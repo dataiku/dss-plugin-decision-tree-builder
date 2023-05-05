@@ -53,7 +53,6 @@ def compute_splits(feature_df, target_col, max_num_splits):
     """
     tree_estimator = DecisionTreeClassifier(max_leaf_nodes=max_num_splits+1,
                                             class_weight='balanced',
-                                            presort=True,
                                             random_state=1407)
 
     tree_estimator.fit(feature_df, target_col)
