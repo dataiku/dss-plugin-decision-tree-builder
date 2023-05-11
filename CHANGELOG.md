@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 1.1.0 (2023-05-05)
+## Version 1.1.0 (2023-05-11)
 * Webapp: Fix autosplit (outdated kwarg in sklearn's DecisionTreeClassifier)
 * Evaluation recipe: Fix recipe with multiclass tasks + import error
 * Scoring recipe: Fix recipe for trees with only one node
