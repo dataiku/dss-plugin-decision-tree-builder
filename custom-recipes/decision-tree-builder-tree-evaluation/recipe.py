@@ -65,7 +65,7 @@ if len(tree.target_values) == 2:
     metrics = ["precision", "recall", "f1", "accuracy", "auc",  "hammingLoss", "logLoss", "calibrationLoss"]
 else:
     target_map = {target_value: target_value_idx for (target_value_idx, target_value) in enumerate(tree.target_values)}
-    metrics_dict = compute_multiclass_metrics(y_actual, y_pred, target_map, probas=probas_df.values)
+    metrics_dict = compute_multiclass_metrics(y_actual, y_pred, target_map, probas=probas_df.values)["metrics"]
     metrics = ["precision", "recall", "f1", "accuracy", "mrocAUC", "logLoss", "hammingLoss", "mcalibrationLoss"]
 
 metrics_dataset.write_schema(get_metric_df_schema(metrics_dict, metrics, recipe_config))
