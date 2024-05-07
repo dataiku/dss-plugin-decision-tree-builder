@@ -18,7 +18,10 @@ def update_input_schema(input_schema, columns):
     return new_input_schema
 
 def _add_column(name, type, schema, columns=None):
-    schema.append({'type': type, 'name': name})
+    col = {'type': type, 'name': name}
+    if type == 'array':
+        col['arrayContent'] = {'type': 'string'}
+    schema.append(col)
     if columns is not None:
         columns.append(name)
 
