@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 1.1.1 (2024-05-07)
+* Scoring recipe: Specify array content type for decision_rules in output schema
+
 ## Version 1.1.0 (2023-05-11)
 * Webapp: Fix autosplit (outdated kwarg in sklearn's DecisionTreeClassifier)
 * Evaluation recipe: Fix recipe with multiclass tasks + import error
