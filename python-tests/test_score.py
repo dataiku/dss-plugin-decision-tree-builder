@@ -122,7 +122,7 @@ def test_scored_df_schema():
 		{"type": "double", "name": "proba_A"},
 		{"type": "double", "name": "proba_B"},
 		{"type": "string", "name": "prediction"},
-		{"type": "array", "name": "decision_rule"},
+		{"type": "array", "name": "decision_rule", "arrayContent": {"type": "string"}},
 		{"type": "int", "name": "leaf_id"},
 		{"type": "string", "name": "label"}
 	]
@@ -131,7 +131,7 @@ def test_scored_df_schema():
 	schema = get_scored_df_schema(tree, get_input_schema(), columns, False, True, False)
 	expected_schema = [
 		{"type": "string", "name": "prediction"},
-		{"type": "array", "name": "decision_rule"},
+		{"type": "array", "name": "decision_rule", "arrayContent": {"type": "string"}},
 		{"type": "int", "name": "leaf_id"},
 		{"type": "string", "name": "label"}
 	]
@@ -144,7 +144,7 @@ def test_scored_df_schema():
 		{"type": "double", "name": "num"},
 		{"type": "string", "name": "prediction"},
 		{"type": "boolean", "name": "prediction_correct"},
-		{"type": "array", "name": "decision_rule"},
+		{"type": "array", "name": "decision_rule", "arrayContent": {"type": "string"}},
 		{"type": "int", "name": "leaf_id"},
 		{"type": "string", "name": "label"}
 	]
