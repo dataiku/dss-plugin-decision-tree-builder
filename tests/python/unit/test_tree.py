@@ -1,19 +1,20 @@
 import pandas as pd
+import numpy as np
 from dku_idtb_decision_tree.tree import InteractiveTree
 
 df = pd.DataFrame([
                     [1, 5.5, "x", "n", "A"],
-                    [2, 7.7, "y", pd.np.nan, "A"],
-                    [pd.np.nan, 7, "z", pd.np.nan, "B"],
+                    [2, 7.7, "y", np.nan, "A"],
+                    [np.nan, 7, "z", np.nan, "B"],
                     [3, 1.2, "z", "n", "B"],
-                    [4, 7.1, "z", pd.np.nan, "C"],
+                    [4, 7.1, "z", np.nan, "C"],
                     [5, .4, "x", "p", "A"],
-                    [6, 8, "z", pd.np.nan, "A"],
+                    [6, 8, "z", np.nan, "A"],
                     [7, 5.5, "y", "p", "B"],
                     [8, 1.5, "z", "n", "B"],
                     [9, 3, "y", "n", "C"],
-                    [10, 7.5, "x", pd.np.nan, "B"],
-                    [11, 6, "x", pd.np.nan, "B"]
+                    [10, 7.5, "x", np.nan, "B"],
+                    [11, 6, "x", np.nan, "B"]
                 ], columns=("num_1", "num_2", "cat_1", "cat_2", "target"))
 
 def test_get_stats():
