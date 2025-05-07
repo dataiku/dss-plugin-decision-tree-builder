@@ -5,6 +5,7 @@
     "icon": "icon-sitemap"
   },
 
+  "hideWebAppConfig": false,
   "baseType": "STANDARD",
   "standardWebAppLibraries": ["d3", "dataiku", "font_awesome"],
   "hasBackend": "true",
@@ -19,8 +20,7 @@
       "name": "input_folder",
       "type": "FOLDER",
       "label": "Folder",
-      "mandatory": true,
-      "hideWebAppConfig": false
+      "mandatory": true
     }
   ]
 }
