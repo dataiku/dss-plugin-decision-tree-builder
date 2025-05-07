@@ -19,7 +19,8 @@
       "name": "input_folder",
       "type": "FOLDER",
       "label": "Folder",
-      "mandatory": true
+      "mandatory": true,
+      "hideWebAppConfig": false
     }
   ]
 }
