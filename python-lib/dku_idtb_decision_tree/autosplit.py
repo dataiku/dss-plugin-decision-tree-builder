@@ -16,7 +16,8 @@ def cross_entropy(population_distrib, sample):
 def convert_categorical_columns(feature_col, target_col):
     target_distrib = target_col.value_counts(normalize=True)
     entropies = target_col.groupby(feature_col).apply(apply_cross_entropy(target_distrib))
-    return entropies.sort_index()
+    return entropies.sort_index().reset_index(drop=True)
+
 
 def autosplit(df, feature, target, numerical, max_splits):
     if len(df[target].unique()) < 2:

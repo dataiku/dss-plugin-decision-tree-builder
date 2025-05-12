@@ -168,7 +168,7 @@ class InteractiveTree(Tree):
 
         stats = {"bins": [], "mean": column.mean(), "max": column.max(), "min": column.min()}
         bins = pd.cut(column.fillna(mean), bins = min(10, column.nunique()), include_lowest = True, right = False)
-        target_grouped = target_column.groupby(bins)
+        target_grouped = target_column.groupby(bins, observed=False) # explicitly set observed=False to avoid deprecation warning
         target_distrib = target_grouped.apply(lambda x: x.value_counts())
         col_distrib = target_grouped.count()
         for interval, count in col_distrib.items():
