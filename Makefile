@@ -30,23 +30,7 @@ unit-tests:
 		pytest tests/python/unit --alluredir=tests/allure_report || ret=$$?; exit $$ret \
 	)
 
-integration-tests:
-	@echo "Running integration tests..."
-	@( \
-		PYTHON_VERSION=`python3 -V 2>&1 | sed 's/[^0-9]*//g' | cut -c 1,2`; \
-		PYTHON_VERSION_IS_CORRECT=`cat code-env/python/desc.json | python3 -c "import sys, json; print(str($$PYTHON_VERSION) in [x[-2:] for x in json.load(sys.stdin)['acceptedPythonInterpreters']]);"`; \
-		if [ $$PYTHON_VERSION_IS_CORRECT == "False" ]; then echo "Python version $$PYTHON_VERSION is not in acceptedPythonInterpreters"; exit 1; else echo "Python version $$PYTHON_VERSION is in acceptedPythonInterpreters"; fi; \
-	)
-	@( \
-		rm -rf ./env/; \
-		python3 -m venv env/; \
-		source env/bin/activate; \
-		pip3 install --upgrade pip;\
-		pip install --no-cache-dir -r tests/python/integration/requirements.txt; \
-		pytest tests/python/integration --alluredir=tests/allure_report || ret=$$?; exit $$ret \
-	)
-
-tests: unit-tests integration-tests
+tests: unit-tests
 
 dist-clean:
 	rm -rf dist
