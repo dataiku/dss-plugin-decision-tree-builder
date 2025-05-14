@@ -1,7 +1,9 @@
 import pandas as pd
+import numpy as np
 from dku_idtb_scoring.score import add_scoring_columns, get_scored_df_schema
 from dku_idtb_decision_tree.tree import ScoringTree
 from pytest import raises
+
 
 nodes = {
 	"0": {
@@ -71,20 +73,20 @@ tree = ScoringTree("target", ["A", "B"], nodes, features)
 
 def get_input_df():
 	return pd.DataFrame([[.2, "u", "A"],
-						[7, pd.np.nan, "B"],
+						[7, np.nan, "B"],
 						[4, "u", "A"],
 						[3, "v", "A"],
-						[pd.np.nan, "u", "C"]], columns=("num", "cat", "target"))
+						[np.nan, "u", "C"]], columns=("num", "cat", "target"))
 
 def test_score():
 	df = get_input_df()
 	add_scoring_columns(tree, df, True)
 	expected_df = pd.DataFrame([
 		[.2, "u", "A", .8, .2, "A", str(["num < 4"]), 1.0, "hello there"],
-		[7, pd.np.nan, "B", pd.np.nan, pd.np.nan, pd.np.nan, str(["4 ≤ num", "cat not in {}".format(["u", "v"])]), 4.0, "general Kenobi"],
+		[7, np.nan, "B", np.nan, np.nan, np.nan, str(["4 ≤ num", "cat not in {}".format(["u", "v"])]), 4.0, "general Kenobi"],
 		[4, "u", "A", .25, .75, "B", str(["4 ≤ num", "cat in {}".format(["u", "v"])]), 3.0, None],
 		[3, "v", "A", .8, .2, "A", str(["num < 4"]), 1.0, "hello there"],
-		[pd.np.nan, "u", "C", .8, .2, "A", str(["num < 4"]), 1.0, "hello there"]
+		[np.nan, "u", "C", .8, .2, "A", str(["num < 4"]), 1.0, "hello there"]
 	], columns=("num", "cat", "target", "proba_A", "proba_B", "prediction", "decision_rule", "leaf_id", "label"))
 	pd.testing.assert_frame_equal(df, expected_df)
 
@@ -92,10 +94,10 @@ def test_score():
 	add_scoring_columns(tree, df, False, True, False)
 	expected_df = pd.DataFrame([
 		[.2, "u", "A", "A", str(["num < 4"]), 1.0, "hello there"],
-		[7, pd.np.nan, "B", pd.np.nan, str(["4 ≤ num", "cat not in {}".format(["u", "v"])]), 4.0, "general Kenobi"],
+		[7, np.nan, "B", np.nan, str(["4 ≤ num", "cat not in {}".format(["u", "v"])]), 4.0, "general Kenobi"],
 		[4, "u", "A", "B", str(["4 ≤ num", "cat in {}".format(["u", "v"])]), 3.0, None],
 		[3, "v", "A", "A", str(["num < 4"]), 1.0, "hello there"],
-		[pd.np.nan, "u", "C", pd.np.nan, str(["num < 4"]), 1.0, "hello there"]
+		[np.nan, "u", "C", np.nan, str(["num < 4"]), 1.0, "hello there"]
 	], columns=("num", "cat", "target", "prediction", "decision_rule", "leaf_id", "label"))
 	pd.testing.assert_frame_equal(df, expected_df)
 
@@ -103,10 +105,10 @@ def test_score():
 	add_scoring_columns(tree, df, False, True, True)
 	expected_df = pd.DataFrame([
 		[.2, "u", "A", "A", True, str(["num < 4"]), 1.0, "hello there"],
-		[7, pd.np.nan, "B", pd.np.nan, pd.np.nan, str(["4 ≤ num", "cat not in {}".format(["u", "v"])]), 4.0, "general Kenobi"],
+		[7, np.nan, "B", np.nan, np.nan, str(["4 ≤ num", "cat not in {}".format(["u", "v"])]), 4.0, "general Kenobi"],
 		[4, "u", "A", "B", False, str(["4 ≤ num", "cat in {}".format(["u", "v"])]), 3.0, None],
 		[3, "v", "A", "A", True, str(["num < 4"]), 1.0, "hello there"],
-		[pd.np.nan, "u", "C", pd.np.nan, pd.np.nan, str(["num < 4"]), 1.0, "hello there"]
+		[np.nan, "u", "C", np.nan, np.nan, str(["num < 4"]), 1.0, "hello there"]
 	], columns=("num", "cat", "target", "prediction", "prediction_correct", "decision_rule", "leaf_id", "label"))
 	pd.testing.assert_frame_equal(df, expected_df)
 

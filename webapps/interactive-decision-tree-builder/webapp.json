@@ -5,6 +5,7 @@
     "icon": "icon-sitemap"
   },
 
+  "hideWebAppConfig": false,
   "baseType": "STANDARD",
   "standardWebAppLibraries": ["d3", "dataiku", "font_awesome"],
   "hasBackend": "true",
