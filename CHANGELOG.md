@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 1.1.2 (2025-05-14)
+* Fix issue with webapp not displaying correctly
+* Fix bug in pandas > 2
+* Fix plugin make command
+
 ## Version 1.1.1 (2024-05-07)
 * Scoring recipe: Specify array content type for decision_rules in output schema
 
