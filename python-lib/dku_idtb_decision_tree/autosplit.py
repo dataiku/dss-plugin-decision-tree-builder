@@ -1,10 +1,10 @@
 import math
 import pandas as pd
 from sklearn.tree import _tree, DecisionTreeClassifier
-from dku_idtb_compatibility.utils import safe_str
+
 
 def apply_cross_entropy(population):
-    return lambda sample: pd.Series(cross_entropy(population, sample), index=sample.index)
+    return lambda sample: cross_entropy(population, sample)
 
 def cross_entropy(population_distrib, sample):
     sample_distrib = sample.value_counts(normalize=True)
@@ -15,8 +15,8 @@ def cross_entropy(population_distrib, sample):
 
 def convert_categorical_columns(feature_col, target_col):
     target_distrib = target_col.value_counts(normalize=True)
-    entropies = target_col.groupby(feature_col).apply(apply_cross_entropy(target_distrib))
-    return entropies.sort_index().reset_index(drop=True)
+    entropies_by_category = target_col.groupby(feature_col).apply(apply_cross_entropy(target_distrib))
+    return feature_col.map(entropies_by_category)
 
 
 def autosplit(df, feature, target, numerical, max_splits):
