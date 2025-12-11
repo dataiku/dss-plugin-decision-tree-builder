@@ -2,7 +2,8 @@
 
 ## Version 1.1.3 (2025-12-10)
 * Bump angularjs to 1.8.2
-* Fix console errors when saving/exiting
+* Include jquery in plugin resources, rather than relying on angularjs jquerylite
+* Fix js NPE when checking non-numeric values
 
 
 ## Version 1.1.2 (2025-05-14)
