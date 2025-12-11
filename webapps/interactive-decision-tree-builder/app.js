@@ -10,10 +10,7 @@
         $scope.config = {};
 
         $scope.$on("closeModal", function() {
-            const mainEl = document.getElementById("webapp-main");
-            if (mainEl) {
-                mainEl.focus();
-            }
+            angular.element("#webapp-main").focus();
         });
     });
 

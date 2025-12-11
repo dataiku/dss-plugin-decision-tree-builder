@@ -58,7 +58,7 @@ app.directive("spinner", function () {
     }
 });
 
-app.service("ModalService", function($compile, $http, $document) {
+app.service("ModalService", function($compile, $http) {
     const DEFAULT_MODAL_TEMPLATE = "/plugins/decision-tree-builder/resource/templates/modal.html";
 
     function create(scope, config, templateUrl=DEFAULT_MODAL_TEMPLATE) {
@@ -83,8 +83,8 @@ app.service("ModalService", function($compile, $http, $document) {
                 $compile(inputField)(newScope);
             }
 
-            $document.find("body").append(element);
-            element[0].focus();
+            angular.element("body").append(element);
+            element.focus();
         });
     };
     return {
@@ -237,14 +237,11 @@ app.directive("customDropdown", function() {
                 scope.isOpen = !scope.isOpen;
             };
 
-            const dropdownElem = elem[0].querySelector(".custom-dropdown");
-            const labelElem = elem[0].querySelector(".label-text");
+            const dropdownElem = elem.find(".custom-dropdown");
+            const labelElem = elem.find(".label-text");
             scope.$on("closeDropdowns", function(e, target) {
-                if (target && target.nodeType) { // check if it's a DOM element
-                    if ((dropdownElem && dropdownElem.contains(target)) || (labelElem && labelElem.contains(target))) {
-                        return;
-                    }
-                }
+                if ((target) && ( angular.element(target).closest(dropdownElem)[0]
+                    || angular.element(target).closest(labelElem)[0] )) { return; }
                 scope.isOpen = false;
             });
 
