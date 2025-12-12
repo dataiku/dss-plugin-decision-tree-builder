@@ -9,6 +9,7 @@
     "icon" : "icon-sitemap",
     "licenseInfo" : "Apache Software License",
     "url" : "https://www.dataiku.com/product/plugins/decision-tree-builder/",
-    "tags" : ["Machine Learning", "Visualization"]
+    "tags" : ["Machine Learning", "Visualization"],
+    "category": "Machine Learning"
   }
 }
