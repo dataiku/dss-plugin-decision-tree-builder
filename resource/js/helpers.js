@@ -9,6 +9,9 @@ app.service("Format", function() {
             return text;
         },
         toFixedIfNeeded: function(number, decimals) {
+            if (number == null) {
+                return "";
+            }
             if(Math.round(number) !== number) {
                 return number.toFixed(decimals);
             }
