@@ -1,6 +1,6 @@
 {
   "id" : "decision-tree-builder",
-  "version" : "1.1.3",
+  "version" : "1.1.4",
   "meta" : {
     "label" : "Interactive Decision Tree Builder",
     "description" : "Build and explore decision trees, and use them to score and evaluate data",
@@ -8,7 +8,7 @@
     "supportLevel": "TIER2_SUPPORT",
     "icon" : "icon-sitemap",
     "licenseInfo" : "Apache Software License",
-    "url" : "https://www.dataiku.com/product/plugins/decision-tree-builder/",
+    "url" : "https://doc.dataiku.com/dss/latest/machine-learning/decision-tree-builder.html",
     "tags" : ["Machine Learning", "Visualization"],
     "category": "Machine Learning"
   }

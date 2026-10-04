@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 1.1.4 (2026-10-04)
+
+* Update documentation links to the DSS reference documentation.
+
 ## Version 1.1.3 (2025-12-10)
 * Bump angularjs to 1.8.2
 * Include jquery in plugin resources, rather than relying on angularjs jquerylite

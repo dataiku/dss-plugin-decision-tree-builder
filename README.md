@@ -2,6 +2,8 @@
 
 The Interactive Decision Tree Builder plugin allows to manually create decision trees and use them to score and evaluate datasets.
 
+Documentation: https://doc.dataiku.com/dss/latest/machine-learning/decision-tree-builder.html
+
 ## Description
 
 This plugin offers one visual webapp to build a decision tree step by step, and two visual recipes to score and evaluate datasets using a decision tree made with the aforementioned webapp.
